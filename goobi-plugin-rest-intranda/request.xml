@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<creationRequest>
+    <all_pages>true</all_pages>
+    <btw_number>999999999</btw_number>
+    <client_instructions>some instructions</client_instructions>
+    <email>john.doe@example.com</email>
+    <identifier>003192975</identifier>
+    <item_in_order>12</item_in_order>
+    <lastname>Doe</lastname>
+    <order_number>34</order_number>
+    <page_numbers>1-7</page_numbers>
+    <process_template>1</process_template>
+    <salutation>Mr.</salutation>
+    <signature>otm: kf 62-335</signature>
+</creationRequest>
