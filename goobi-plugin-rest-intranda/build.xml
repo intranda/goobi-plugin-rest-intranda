@@ -7,11 +7,12 @@
     <!-- ================================= 
 	        properties             
 	     ================================= -->
-    <property name="filename" value="api" />
+    <property name="filename" value="intranda-rest-api" />
     <property name="dir.build" value="bin" />
     <property name="dir.deploy" value="deploy" />
-    <property name="pluginFolderWin" value="C:/Goobi/plugins/GUI/" />
-    <property name="pluginFolderUnix" value="/opt/digiverso/goobi/plugins/GUI/" />
+    <property name="pluginFolderWin" value="C:/Goobi/plugins/" />
+    <property name="pluginFolderUnix" value="/opt/digiverso/goobi/plugins/" />
+	<property name="goobiLibFolder" value="/opt/digiverso/git/goobi/Goobi/webapp/WEB-INF/lib/" />
 
     <path id="classpath">
         <fileset dir="/opt/digiverso/goobi-jsf2/lib" />
@@ -63,7 +64,7 @@
 
     <!--  copyToPluginFolder, depending on OS -->
     <target name="copyToPluginFolder" depends="linux,win32">
-        <antcall target="clean" />
+    	<antcall target="clean" />
     </target>
     <target name="linux" if="isUnix">
         <echo>Using Linux path: ${pluginFolderUnix}</echo>
@@ -155,6 +156,19 @@
             <os family="unix" />
         </condition>
         <antcall target="copyToPluginFolder" />
+    	<echo>Please move the compiled file ${filename}.jar now into the Goobi WEB-INF/lib folder.</echo>
+        <echo>intranda... alles ist gut!</echo>
+    </target>
+	
+	
+	<!-- ================================= 
+                  DEPLOY
+	     ================================= -->
+
+    <!-- Default target that compiles the jar from eclipse and copies it to the right folder depending on operating system-->
+    <target name="goobi" depends="jar.runnable" description="Target for Eclipse compiling to Goobi lib folder">
+        <copy tofile="${goobiLibFolder}/${filename}.jar" file="${dir.deploy}/${filename}.jar" overwrite="true" />
+    	<antcall target="clean" />
         <echo>intranda... alles ist gut!</echo>
     </target>
 
