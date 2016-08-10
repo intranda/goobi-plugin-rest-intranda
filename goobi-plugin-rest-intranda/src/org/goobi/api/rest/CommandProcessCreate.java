@@ -16,6 +16,7 @@ import javax.ws.rs.core.UriInfo;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.SystemUtils;
+import org.goobi.api.rest.request.CreationRequest;
 import org.goobi.api.rest.response.CreationResponse;
 import org.goobi.beans.Process;
 import org.goobi.beans.Processproperty;
@@ -45,8 +46,8 @@ import de.sub.goobi.persistence.managers.StepManager;
 import de.unigoettingen.sub.search.opac.ConfigOpac;
 import de.unigoettingen.sub.search.opac.ConfigOpacCatalogue;
 
-@Path("/creation")
-public class CreationResource {
+@Path("/process-create")
+public class CommandProcessCreate {
 
     @Context
     UriInfo uriInfo;
@@ -84,44 +85,34 @@ public class CreationResource {
         return cr;
     }
 
-    @POST
-    @Consumes(MediaType.TEXT_XML)
-    public CreationResponse createNewProcess(CreationRequest req, @Context final HttpServletResponse response) {
-        CreationResponse cr = new CreationResponse();
+    @Path("/{templateid}/{catalogueid}")
+    @GET
+    @Produces("text/json")
+    public CreationResponse createNewProcess(@PathParam("templateid") int templateId, @PathParam("catalogueid") String catalogueId) {
+    	CreationResponse cr = new CreationResponse();
+        
+        String opacIdentifier = catalogueId;
 
-        String errorText = req.validateRequest(req);
-
-        if (!errorText.isEmpty()) {
-            cr.setResult("failure");
-            cr.setErrorText(errorText);
-            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-            return cr;
-        }
-
-        String opacIdentifier = req.getIdentifier();
-
-        String processTitle = req.getOrder_number() + "_" + req.getItem_in_order() + req.getLastname();
+        String processTitle = catalogueId;
 
         Process p = ProcessManager.getProcessByTitle(processTitle);
         if (p != null) {
-            cr.setResult("failure");
+            cr.setResult("error");
             cr.setErrorText("Process " + processTitle + " already exists.");
             cr.setProcessId(p.getId());
             cr.setProcessName(p.getTitel());
-            response.setStatus(HttpServletResponse.SC_CONFLICT);
             return cr;
         }
 
-        Process template = ProcessManager.getProcessById(req.getProcess_template());
+        Process template = ProcessManager.getProcessById(templateId);
         Prefs prefs = template.getRegelsatz().getPreferences();
         Fileformat ff = null;
         try {
             ff = getOpacRequest(opacIdentifier, prefs);
 
         } catch (Exception e) {
-            cr.setResult("failure");
+            cr.setResult("error");
             cr.setErrorText("Error during opac request for " + opacIdentifier + ": " + e.getMessage());
-            response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
             return cr;
         }
 
@@ -132,20 +123,79 @@ public class CreationResource {
         try {
             NeuenProzessAnlegen(process, template, ff, prefs);
         } catch (Exception e) {
-            cr.setResult("failure");
+            cr.setResult("error");
             cr.setErrorText("Error during process creation for " + opacIdentifier + ": " + e.getMessage());
-            response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
             return cr;
         }
-
-        createProperties(req, process);
 
         cr.setResult("success");
         cr.setProcessName(process.getTitel());
         cr.setProcessId(process.getId());
         return cr;
-
     }
+    
+//    @Path("/test")
+//    @POST
+//    @Consumes(MediaType.TEXT_XML)
+//    public CreationResponse createNewProcessPost(CreationRequest req, @Context final HttpServletResponse response) {
+//        CreationResponse cr = new CreationResponse();
+//        String errorText = req.validateRequest(req);
+//
+//        if (!errorText.isEmpty()) {
+//            cr.setResult("failure");
+//            cr.setErrorText(errorText);
+//            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+//            return cr;
+//        }
+//
+//        String opacIdentifier = req.getIdentifier();
+//
+//        String processTitle = req.getOrder_number() + "_" + req.getItem_in_order() + req.getLastname();
+//
+//        Process p = ProcessManager.getProcessByTitle(processTitle);
+//        if (p != null) {
+//            cr.setResult("failure");
+//            cr.setErrorText("Process " + processTitle + " already exists.");
+//            cr.setProcessId(p.getId());
+//            cr.setProcessName(p.getTitel());
+//            response.setStatus(HttpServletResponse.SC_CONFLICT);
+//            return cr;
+//        }
+//
+//        Process template = ProcessManager.getProcessById(req.getProcess_template());
+//        Prefs prefs = template.getRegelsatz().getPreferences();
+//        Fileformat ff = null;
+//        try {
+//            ff = getOpacRequest(opacIdentifier, prefs);
+//
+//        } catch (Exception e) {
+//            cr.setResult("failure");
+//            cr.setErrorText("Error during opac request for " + opacIdentifier + ": " + e.getMessage());
+//            response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+//            return cr;
+//        }
+//
+//        Process process = cloneTemplate(template);
+//        // set title
+//        process.setTitel(processTitle);
+//
+//        try {
+//            NeuenProzessAnlegen(process, template, ff, prefs);
+//        } catch (Exception e) {
+//            cr.setResult("failure");
+//            cr.setErrorText("Error during process creation for " + opacIdentifier + ": " + e.getMessage());
+//            response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+//            return cr;
+//        }
+//
+//        createProperties(req, process);
+//
+//        cr.setResult("success");
+//        cr.setProcessName(process.getTitel());
+//        cr.setProcessId(process.getId());
+//        return cr;
+//
+//    }
 
     private void createProperties(CreationRequest req, Process process) {
         int id = process.getId();

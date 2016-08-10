@@ -1,4 +1,4 @@
-package org.goobi.api.rest;
+package org.goobi.api.rest.request;
 
 import javax.xml.bind.annotation.XmlRootElement;
 
@@ -33,28 +33,6 @@ public @Data class CreationRequest {
             text = addErrorMessage(text, "identifier");
         }
 
-        if (StringUtils.isBlank(req.getLastname())) {
-            text = addErrorMessage(text, "lastname");
-        }
-
-        if (StringUtils.isBlank(req.getSalutation())) {
-            text = addErrorMessage(text, "salutation");
-        }
-
-        if (StringUtils.isBlank(req.getEmail())) {
-            text = addErrorMessage(text, "email");
-        }
-
-        if (StringUtils.isBlank(req.getPage_numbers())) {
-            text = addErrorMessage(text, "page_numbers");
-        }
-        if (req.getOrder_number() == 0) {
-            text = addErrorMessage(text, "order_number");
-        }
-
-        if (req.getItem_in_order() == 0) {
-            text = addErrorMessage(text, "item_in_order");
-        }
         return text;
     }
 

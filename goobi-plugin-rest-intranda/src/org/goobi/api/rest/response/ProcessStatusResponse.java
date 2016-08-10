@@ -12,9 +12,11 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import lombok.Data;
 
 @XmlRootElement
-@JsonPropertyOrder({ "title", "id", "creationDate", "step"})
+@JsonPropertyOrder({ "result", "title", "id", "creationDate", "step"})
 public @Data class ProcessStatusResponse {
 
+	private String result; // success, error
+	 
     private String title;
     
     private int id;
