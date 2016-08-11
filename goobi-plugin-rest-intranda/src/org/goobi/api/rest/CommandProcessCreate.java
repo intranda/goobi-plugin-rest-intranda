@@ -85,6 +85,7 @@ public class CommandProcessCreate {
         return cr;
     }
 
+    // TODO wieder entfernen. get ist nicht erlaubt. Entweder POST oder PUT
     @Path("/{templateid}/{catalogueid}")
     @GET
     @Produces("text/json")
