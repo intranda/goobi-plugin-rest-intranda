@@ -25,14 +25,14 @@ import de.sub.goobi.helper.exceptions.SwapException;
 import de.sub.goobi.persistence.managers.ProcessManager;
 import lombok.extern.log4j.Log4j;
 
-@Path("/process-status")
+@Path("/process")
 @Log4j
 public class CommandProcessStatus {
 
     @Context
     UriInfo uriInfo;
 
-    @Path("/json/{processid}")
+    @Path("details/json/{processid}")
     @GET
     @Produces("text/json")
     public ProcessStatusResponse getProcessStatusAsJson(@PathParam("processid") int processid) {
@@ -63,7 +63,7 @@ public class CommandProcessStatus {
      *         internal error
      */
 
-    @Path("/{processid}")
+    @Path("check/{processid}")
     @GET
     @Produces("text/json")
     public Response getStatusOfProcess(@PathParam("processid") int processid) {
