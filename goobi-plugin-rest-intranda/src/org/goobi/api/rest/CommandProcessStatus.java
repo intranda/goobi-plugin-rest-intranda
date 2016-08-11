@@ -37,14 +37,6 @@ public class CommandProcessStatus {
 		return resp;
 	}
 
-	@Path("/html/{processid}")
-	@GET
-	@Produces(MediaType.TEXT_HTML)
-	public ProcessStatusResponse getProcessStatusAsHtml(@PathParam("processid") int processid) {
-		ProcessStatusResponse resp = getData(processid);
-		return resp;
-	}
-
 	private ProcessStatusResponse getData(int processid) {
 		Process p = ProcessManager.getProcessById(processid);
 		ProcessStatusResponse resp = new ProcessStatusResponse();
