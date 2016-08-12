@@ -1,30 +1,52 @@
 
-#################   Get process infomation   #################
+#####################   Get process infomation   #####################
 
------------------   Process details   -----------------
+
+++++++++++++++   Process details   ++++++++++++++
 Get detailed information about a process and all its steps incl. progress, user and dates
 
 http://localhost:8080/Goobi/api/process/details/json/12?token=test
 http://localhost:8080/Goobi/api/process/details/xml/12?token=test
 
 
------------------   Process check   -----------------
+++++++++++++++   Process check   ++++++++++++++
 A quick check if a process exists and images do exist for this process
 
 http://localhost:8080/Goobi/api/process/check/12?token=test
 
 
------------------   Process download   -----------------
+++++++++++++++   Process report time range  ++++++++++++++
+Get the status of all processes within a time range
+
+http://localhost:8080/Goobi/api/process/report/2016-05-01/2016-07-01/?token=test
+
+
+++++++++++++++   Process report til today  ++++++++++++++
+Get the status of all processes from a given date til today
+
+http://localhost:8080/Goobi/api/process/report/2016-05-01/?token=test
+
+
+++++++++++++++   Process download   ++++++++++++++
 Download all images of a process as a zip file
 
 http://localhost:8080/Goobi/api/process/download/12?token=test
 
 
 
-#################   Create processes   #################
+#####################   Create processes   #####################
 
------------------   Process details   -----------------
+
+++++++++++++++   Process create from catalogue  ++++++++++++++
 
 Create a process on the basis of a process template ID, the catalogue name and a catalogue ID. Currently the catalogue is hardcoded to use GBV out of the configuration
 
 http://localhost:8080/Goobi/api/process/create/108/GBV/85992694X/?token=test
+http://localhost:8080/Goobi/api/process/create/108/85992694X/?token=test
+
+
+
+
+
+
+

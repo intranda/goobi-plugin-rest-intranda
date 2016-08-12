@@ -84,6 +84,14 @@ public class CommandProcessCreate {
 
         return cr;
     }
+
+ // TODO wieder entfernen. get ist nicht erlaubt. Entweder POST oder PUT
+    @Path("create/{templateid}/{catalogueid}")
+    @GET
+    @Produces("text/json")
+    public CreationResponse createNewProcess(@PathParam("templateid") int templateId, @PathParam("catalogueid") String catalogueId) {
+    	return createNewProcess(templateId, "GBV", catalogueId);
+    }
     
     // TODO wieder entfernen. get ist nicht erlaubt. Entweder POST oder PUT
     @Path("create/{templateid}/{catalogue}/{catalogueid}")
