@@ -40,7 +40,7 @@ public class CommandProcessStatus {
         return resp;
     }
 
-    @Path("/xml/{processid}")
+    @Path("details/xml/{processid}")
     @GET
     @Produces(MediaType.TEXT_XML)
     public ProcessStatusResponse getProcessStatusAsXml(@PathParam("processid") int processid) {

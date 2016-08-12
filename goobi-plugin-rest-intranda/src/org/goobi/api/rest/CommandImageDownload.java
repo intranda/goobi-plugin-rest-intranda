@@ -35,14 +35,14 @@ import de.sub.goobi.helper.exceptions.SwapException;
 import de.sub.goobi.persistence.managers.ProcessManager;
 import lombok.extern.log4j.Log4j;
 
-@Path("/image-download")
+@Path("/process")
 @Log4j
 public class CommandImageDownload {
 
     @Context
     UriInfo uriInfo;
 
-    @Path("/{processid}")
+    @Path("download/{processid}")
     @GET
     @Produces("application/zip")
     // TODO get rid of temporary file

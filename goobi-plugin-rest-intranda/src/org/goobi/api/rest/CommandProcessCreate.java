@@ -46,7 +46,7 @@ import de.sub.goobi.persistence.managers.StepManager;
 import de.unigoettingen.sub.search.opac.ConfigOpac;
 import de.unigoettingen.sub.search.opac.ConfigOpacCatalogue;
 
-@Path("/process-create")
+@Path("/process")
 public class CommandProcessCreate {
 
     @Context
@@ -84,16 +84,16 @@ public class CommandProcessCreate {
 
         return cr;
     }
-
+    
     // TODO wieder entfernen. get ist nicht erlaubt. Entweder POST oder PUT
-    @Path("/{templateid}/{catalogueid}")
+    @Path("create/{templateid}/{catalogue}/{catalogueid}")
     @GET
     @Produces("text/json")
-    public CreationResponse createNewProcess(@PathParam("templateid") int templateId, @PathParam("catalogueid") String catalogueId) {
+    public CreationResponse createNewProcess(@PathParam("templateid") int templateId, @PathParam("catalogue") String catalogue, @PathParam("catalogueid") String catalogueId) {
     	CreationResponse cr = new CreationResponse();
         
         String opacIdentifier = catalogueId;
-
+        String myCatalogue = catalogue;
         String processTitle = catalogueId;
 
         Process p = ProcessManager.getProcessByTitle(processTitle);
@@ -109,11 +109,11 @@ public class CommandProcessCreate {
         Prefs prefs = template.getRegelsatz().getPreferences();
         Fileformat ff = null;
         try {
-            ff = getOpacRequest(opacIdentifier, prefs);
+            ff = getOpacRequest(opacIdentifier, prefs, myCatalogue);
 
         } catch (Exception e) {
             cr.setResult("error");
-            cr.setErrorText("Error during opac request for " + opacIdentifier + ": " + e.getMessage());
+            cr.setErrorText("Error during opac request for " + opacIdentifier + " from catalogue " + myCatalogue + ": " + e.getMessage());
             return cr;
         }
 
@@ -323,10 +323,10 @@ public class CommandProcessCreate {
         return process;
     }
 
-    private Fileformat getOpacRequest(String opacIdentifier, Prefs prefs) throws Exception {
+    private Fileformat getOpacRequest(String opacIdentifier, Prefs prefs, String myCatalogue) throws Exception {
 // TODO
         // get logical data from opac
-        ConfigOpacCatalogue coc = new ConfigOpac().getCatalogueByName("GBV");
+        ConfigOpacCatalogue coc = new ConfigOpac().getCatalogueByName(myCatalogue);
         IOpacPlugin myImportOpac = (IOpacPlugin) PluginLoader.getPluginByTitle(PluginType.Opac, coc.getOpacType());
         Fileformat ff = myImportOpac.search("12", opacIdentifier, coc, prefs);
         Metadata md = new Metadata(prefs.getMetadataTypeByName("singleDigCollection"));
