@@ -1,13 +1,14 @@
 package org.goobi.api.rest;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
-import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -48,12 +49,34 @@ public class CommandProcessStatus {
         return resp;
     }
 
-    @Path("/{startdate}/{enddate}")
+    @Path("report/{startdate}/{enddate}")
     @GET
-    @Produces("text/csv")
+    @Produces("text/json")
     public List<ProcessStatusResponse> getProcessStatusList(@PathParam("startdate") String start, @PathParam("enddate") String end) {
+        String sql;
 
-        return null;
+        if (end != null) {
+            sql = "(erstellungsdatum BETWEEN '" + start + "' AND '" + end + "')";
+        } else {
+            sql = "erstellungsdatum > '" + start + "'";
+        }
+        List<Integer> processIdList = ProcessManager.getIDList(sql);
+
+        List<ProcessStatusResponse> processList = new LinkedList<>();
+
+        for (Integer processid : processIdList) {
+            ProcessStatusResponse resp = getData(processid);
+            processList.add(resp);
+        }
+
+        return processList;
+    }
+
+    @Path("report/{startdate}")
+    @GET
+    @Produces("text/json")
+    public List<ProcessStatusResponse> getProcessStatusList(@PathParam("startdate") String start) {
+        return getProcessStatusList(start, null);
     }
 
     /**
@@ -65,11 +88,11 @@ public class CommandProcessStatus {
 
     @Path("check/{processid}")
     @GET
-    @Produces("text/json")
+    @Produces(MediaType.TEXT_PLAIN)
     public Response getStatusOfProcess(@PathParam("processid") int processid) {
         Process p = ProcessManager.getProcessById(processid);
         if (p == null) {
-           return Response.status(Status.BAD_REQUEST).entity("Process not found").build();
+            return Response.status(Status.BAD_REQUEST).entity("Process not found").build();
         }
         try {
             String imageFolder = p.getImagesTifDirectory(false);
