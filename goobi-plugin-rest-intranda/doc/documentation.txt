@@ -1,3 +1,14 @@
+#####################       Configuration        #####################
+
+++++++++++++++  goobi_webapi.xml   ++++++++++++++
+	<credentials ip="127.0.0.1" password="test">
+		<!-- Schaltet nur die Methode /process/check frei: -->
+		<command name="/process/check"/>
+		<!-- Schaltet alle Methoden unterhalb von /process frei: -->
+		<command name="/process"/>
+		<!-- Voller Zugriff: -->
+		<command name="addStep"/>
+	</credentials>		
 
 #####################   Get process infomation   #####################
 
