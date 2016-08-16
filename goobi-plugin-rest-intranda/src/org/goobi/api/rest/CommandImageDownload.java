@@ -46,9 +46,9 @@ public class CommandImageDownload {
     @GET
     @Produces("application/zip")
     // TODO get rid of temporary file
-    public Response download(@PathParam("processid") int processid) {
+    public Response download(@PathParam("processTitle") String processTitle) {
 
-        org.goobi.beans.Process process = ProcessManager.getProcessById(processid);
+        org.goobi.beans.Process process = ProcessManager.getProcessByTitle(processTitle);
         if (process == null) {
             ResponseBuilder response = Response.status(Status.BAD_REQUEST);
             return response.build();

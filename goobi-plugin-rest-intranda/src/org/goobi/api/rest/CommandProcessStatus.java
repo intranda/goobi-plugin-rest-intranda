@@ -33,19 +33,19 @@ public class CommandProcessStatus {
     @Context
     UriInfo uriInfo;
 
-    @Path("details/json/{processid}")
+    @Path("details/json/{processTitle}")
     @GET
     @Produces("text/json")
-    public ProcessStatusResponse getProcessStatusAsJson(@PathParam("processid") int processid) {
-        ProcessStatusResponse resp = getData(processid);
+    public ProcessStatusResponse getProcessStatusAsJson(@PathParam("processTitle") String processTitle) {
+        ProcessStatusResponse resp = getData(processTitle);
         return resp;
     }
 
-    @Path("details/xml/{processid}")
+    @Path("details/xml/{processTitle}")
     @GET
     @Produces(MediaType.TEXT_XML)
-    public ProcessStatusResponse getProcessStatusAsXml(@PathParam("processid") int processid) {
-        ProcessStatusResponse resp = getData(processid);
+    public ProcessStatusResponse getProcessStatusAsXml(@PathParam("processTitle") String processTitle) {
+        ProcessStatusResponse resp = getData(processTitle);
         return resp;
     }
 
@@ -65,7 +65,8 @@ public class CommandProcessStatus {
         List<ProcessStatusResponse> processList = new LinkedList<>();
 
         for (Integer processid : processIdList) {
-            ProcessStatusResponse resp = getData(processid);
+        	Process p = ProcessManager.getProcessById(processid);
+            ProcessStatusResponse resp = getData(p.getTitel());
             processList.add(resp);
         }
 
@@ -86,11 +87,11 @@ public class CommandProcessStatus {
      *         internal error
      */
 
-    @Path("check/{processid}")
+    @Path("check/{processTitle}")
     @GET
     @Produces(MediaType.TEXT_PLAIN)
-    public Response getStatusOfProcess(@PathParam("processid") int processid) {
-        Process p = ProcessManager.getProcessById(processid);
+    public Response getStatusOfProcess(@PathParam("processTitle") String processTitle) {
+        Process p = ProcessManager.getProcessByTitle(processTitle);
         if (p == null) {
             return Response.status(Status.BAD_REQUEST).entity("Process not found").build();
         }
@@ -108,11 +109,11 @@ public class CommandProcessStatus {
         return Response.ok().entity("Process ok.").build();
     }
 
-    private ProcessStatusResponse getData(int processid) {
-        Process p = ProcessManager.getProcessById(processid);
+    private ProcessStatusResponse getData(String processTitle) {
+        Process p = ProcessManager.getProcessByTitle(processTitle);
         ProcessStatusResponse resp = new ProcessStatusResponse();
         if (p == null) {
-            resp.setResult("No proccess with id " + processid + " found");
+            resp.setResult("No proccess with title " + processTitle + " found");
         } else {
             resp.setResult("ok");
             resp.setCreationDate(p.getErstellungsdatum());
