@@ -33,7 +33,7 @@ public class CommandProcessStatus {
     @Context
     UriInfo uriInfo;
 
-    @Path("details/json/{processTitle}")
+    @Path("details/title/{processTitle}")
     @GET
     @Produces("text/json")
     public ProcessStatusResponse getProcessStatusAsJson(@PathParam("processTitle") String processTitle) {
@@ -41,13 +41,29 @@ public class CommandProcessStatus {
         return resp;
     }
 
-    @Path("details/xml/{processTitle}")
+    @Path("details/id/{processId}")
     @GET
-    @Produces(MediaType.TEXT_XML)
-    public ProcessStatusResponse getProcessStatusAsXml(@PathParam("processTitle") String processTitle) {
-        ProcessStatusResponse resp = getData(processTitle);
+    @Produces("text/json")
+    public ProcessStatusResponse getProcessStatusAsJson(@PathParam("processId") int processId) {
+        ProcessStatusResponse resp = getData(processId);
         return resp;
     }
+    
+//    @Path("details/title/xml/{processTitle}")
+//    @GET
+//    @Produces(MediaType.TEXT_XML)
+//    public ProcessStatusResponse getProcessStatusAsXml(@PathParam("processTitle") String processTitle) {
+//        ProcessStatusResponse resp = getData(processTitle);
+//        return resp;
+//    }
+//    
+//    @Path("details/id/xml/{processId}")
+//    @GET
+//    @Produces(MediaType.TEXT_XML)
+//    public ProcessStatusResponse getProcessStatusAsXml(@PathParam("processTitle") int processId) {
+//        ProcessStatusResponse resp = getData(processId);
+//        return resp;
+//    }
 
     @Path("report/{startdate}/{enddate}")
     @GET
@@ -86,8 +102,18 @@ public class CommandProcessStatus {
      * @return status code 200 if process exists and has images, 206 if process exists, but has no images, 404 if process does not exist and 500 on
      *         internal error
      */
-
-    @Path("check/{processTitle}")
+    @Path("check/id/{processId}")
+    @GET
+    @Produces(MediaType.TEXT_PLAIN)
+    public Response getStatusOfProcess(@PathParam("processId") int processId) {
+        Process p = ProcessManager.getProcessById(processId);
+        if (p == null) {
+            return Response.status(Status.BAD_REQUEST).entity("Process not found").build();
+        }
+        return checkStatusProcessContent(p);
+    }
+    
+    @Path("check/title/{processTitle}")
     @GET
     @Produces(MediaType.TEXT_PLAIN)
     public Response getStatusOfProcess(@PathParam("processTitle") String processTitle) {
@@ -95,7 +121,11 @@ public class CommandProcessStatus {
         if (p == null) {
             return Response.status(Status.BAD_REQUEST).entity("Process not found").build();
         }
-        try {
+        return checkStatusProcessContent(p);
+    }
+
+	private Response checkStatusProcessContent(Process p) {
+		try {
             String imageFolder = p.getImagesTifDirectory(false);
             List<String> files = NIOFileUtils.list(imageFolder);
             if (files.isEmpty()) {
@@ -107,7 +137,7 @@ public class CommandProcessStatus {
         }
 
         return Response.ok().entity("Process ok.").build();
-    }
+	}
 
     private ProcessStatusResponse getData(String processTitle) {
         Process p = ProcessManager.getProcessByTitle(processTitle);
@@ -115,25 +145,39 @@ public class CommandProcessStatus {
         if (p == null) {
             resp.setResult("No proccess with title " + processTitle + " found");
         } else {
-            resp.setResult("ok");
-            resp.setCreationDate(p.getErstellungsdatum());
-            resp.setId(p.getId());
-            resp.setTitle(p.getTitel());
-
-            for (Step step : p.getSchritte()) {
-                StepResponse sr = new StepResponse();
-                resp.getStep().add(sr);
-                sr.setEndDate(step.getBearbeitungsende());
-                sr.setStartDate(step.getBearbeitungsbeginn());
-                sr.setStatus(step.getBearbeitungsstatusEnum().getTitle());
-                if (step.getBearbeitungsbenutzer() != null) {
-                    sr.setUser(step.getBearbeitungsbenutzer().getNachVorname());
-                }
-                sr.setTitle(step.getTitel());
-                sr.setOrder(step.getReihenfolge());
-            }
+            createResponse(p, resp);
+        }
+        return resp;
+    }
+    
+    private ProcessStatusResponse getData(int processId) {
+        Process p = ProcessManager.getProcessById(processId);
+        ProcessStatusResponse resp = new ProcessStatusResponse();
+        if (p == null) {
+            resp.setResult("No proccess with ID " + processId + " found");
+        } else {
+            createResponse(p, resp);
         }
         return resp;
     }
 
+	private void createResponse(Process p, ProcessStatusResponse resp) {
+		resp.setResult("ok");
+		resp.setCreationDate(p.getErstellungsdatum());
+		resp.setId(p.getId());
+		resp.setTitle(p.getTitel());
+
+		for (Step step : p.getSchritte()) {
+		    StepResponse sr = new StepResponse();
+		    resp.getStep().add(sr);
+		    sr.setEndDate(step.getBearbeitungsende());
+		    sr.setStartDate(step.getBearbeitungsbeginn());
+		    sr.setStatus(step.getBearbeitungsstatusEnum().getTitle());
+		    if (step.getBearbeitungsbenutzer() != null) {
+		        sr.setUser(step.getBearbeitungsbenutzer().getNachVorname());
+		    }
+		    sr.setTitle(step.getTitel());
+		    sr.setOrder(step.getReihenfolge());
+		}
+	}
 }

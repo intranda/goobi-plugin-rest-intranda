@@ -42,14 +42,27 @@ public class CommandImageDownload {
     @Context
     UriInfo uriInfo;
 
-    @Path("download/{processid}")
+    @Path("download/id/{processId}")
     @GET
     @Produces("application/zip")
-    // TODO get rid of temporary file
-    public Response download(@PathParam("processTitle") String processTitle) {
+    public Response download(@PathParam("processId") int processId) {
+        org.goobi.beans.Process process = ProcessManager.getProcessById(processId);
+        return startDownload(process);
 
+    }
+    
+    @Path("download/title/{processTitle}")
+    @GET
+    @Produces("application/zip")
+    public Response download(@PathParam("processTitle") String processTitle) {
         org.goobi.beans.Process process = ProcessManager.getProcessByTitle(processTitle);
-        if (process == null) {
+        return startDownload(process);
+
+    }
+
+    // TODO get rid of temporary file
+	private Response startDownload(org.goobi.beans.Process process) {
+		if (process == null) {
             ResponseBuilder response = Response.status(Status.BAD_REQUEST);
             return response.build();
         }
@@ -96,8 +109,7 @@ public class CommandImageDownload {
 
         return Response.ok(fileStream, "application/zip").header("content-disposition", "attachment; filename = " + process.getTitel() + ".zip")
                 .build();
-
-    }
+	}
 
     private static byte[] zipFiles(List<java.nio.file.Path> sourceFiles, File zipFile) throws IOException {
 
