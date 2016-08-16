@@ -3,20 +3,19 @@ $goobiToken = 'test';
 $pageUrl = 'https://adminre.intranda.com/?page_id=313';
 
 echo '<form action="' . $pageUrl . '" method="post">';
-echo '<div class="row"><div class="col-sm-3 goobi-label">Job title:</div><div class="col-sm-6"><input type="text" name="goobi-id" />';
+echo '<div class="row"><div class="col-sm-3 goobi-label">Job title:</div><div class="col-sm-6"><input type="text" name="goobi-title" />';
 echo '</div><div class="col-sm-3"><input class="goobi-button fusion-button button-small" type="submit" value="Request status" /></div></div>';
 echo'</form>';
 
-if( isset($_POST['goobi-id']) && $_POST['goobi-id'] !='' ){
-    $url = $goobiUrl . 'api/process/details/json/' . $_POST['goobi-id'] . '?token=' . $goobiToken;
-    //echo $url;
+if( isset($_POST['goobi-title']) && $_POST['goobi-title'] !='' ){
+    $url = $goobiUrl . 'api/process/details/title/' . $_POST['goobi-title'] . '?token=' . $goobiToken;
+    // echo $url;
     $json = file_get_contents($url);
     $data =  json_decode($json);
 
     //echo '<br/>' . $json . '<br/><br/>';
     
     if ($data->result !='ok') {
-        
         echo '<div class="goobi-alert fusion-alert alert error alert-dismissable alert-danger alert-shadow">  <span class="alert-icon"><i class="fa fa-lg fa-exclamation-triangle"></i></span>' . $data->result . '</div>';
         
     }else{
