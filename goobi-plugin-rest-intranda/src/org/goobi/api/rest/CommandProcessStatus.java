@@ -2,6 +2,7 @@ package org.goobi.api.rest;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -36,6 +37,8 @@ public class CommandProcessStatus {
     @Path("details/title/{processTitle}")
     @GET
     @Produces("text/json")
+//    @Produces({"text/json", "application/xml"})
+   
     public ProcessStatusResponse getProcessStatusAsJson(@PathParam("processTitle") String processTitle) {
         ProcessStatusResponse resp = getData(processTitle);
         return resp;
@@ -69,12 +72,12 @@ public class CommandProcessStatus {
     @GET
     @Produces("text/json")
     public List<ProcessStatusResponse> getProcessStatusList(@PathParam("startdate") String start, @PathParam("enddate") String end) {
-        String sql;
+        String sql = "IstTemplate = false AND ";
 
         if (end != null) {
-            sql = "(erstellungsdatum BETWEEN '" + start + "' AND '" + end + "')";
+            sql += "(erstellungsdatum BETWEEN '" + start + "' AND '" + end + "')";
         } else {
-            sql = "erstellungsdatum > '" + start + "'";
+            sql += "erstellungsdatum > '" + start + "'";
         }
         List<Integer> processIdList = ProcessManager.getIDList(sql);
 
