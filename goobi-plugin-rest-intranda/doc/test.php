@@ -1,23 +1,20 @@
-[insert_php]
+<?php
+ echo "Hello, world!";
+ 
+ 
+ $goobiUrl = 'http://demo03.intranda.com/goobi/';
+ $goobiToken = 'test';
+ $pageUrl = 'https://adminre.intranda.com/?page_id=388';
+ 
 
-$goobiUrl = 'http://demo03.intranda.com/goobi/';
-$goobiToken = 'test';
-$pageUrl = 'https://adminre.intranda.com/?page_id=388';
-
-echo '<form action="' . $pageUrl . '" method="post">';
-echo '<div class="row"><div class="col-sm-3 goobi-label">Start date:</div><div class="col-sm-6"><input type="text" name="goobi-startdate" />';
-echo '</div><div class="col-sm-3"><input class="goobi-button fusion-button button-small" type="submit" value="Request status" /></div></div>';
-echo'</form>';
-
-if( isset($_POST['goobi-startdate']) && $_POST['goobi-startdate'] !='' ){
-    $url = $goobiUrl . 'api/process/report/' . $_POST['goobi-startdate'] . '?token=' . $goobiToken;
-    $json = file_get_contents($url);
-    $data =  json_decode($json);
-
-    // --------------------------------------------------------------------------------------------------------------------------------------
-    
-    
-	if (count($data)) {
+ 	$url = $goobiUrl . 'api/process/report/' . '2015-01-01' . '?token=' . $goobiToken;
+ 	$json = file_get_contents($url);
+ 	$data =  json_decode($json);
+ 
+ 	// --------------------------------------------------------------------------------------------------------------------------------------
+ 	
+ 	
+if (count($data)) {
  		echo '<div class="goobi-alert fusion-alert alert error alert-dismissable alert-success alert-shadow"><span class="alert-icon"><i class="fa fa-lg fa-check"></i></span>' . count($data) . ' jobs found for the given time range from ' . $_POST['goobi-startdate'] . ' til today.</div>';
  		echo "\r\n";
  		
@@ -54,19 +51,8 @@ if( isset($_POST['goobi-startdate']) && $_POST['goobi-startdate'] !='' ){
  				$percent = $done * 100 / count($process->step);
  				echo "\r\n";
  				echo "\r\n";
- 				//echo round($percent);
- 				
- 				
- 				
- 				echo '<div class="fusion-progressbar fusion-progressbar-text-on-bar"><div class="fusion-progressbar-bar progress-bar" style="background-color:#f6f6f6;height:37px;"><div aria-valuenow="' . round($percent) . '" aria-valuemax="100" aria-valuemin="0" role="progressbar" style="width: ' . round($percent) . '%; background-color: rgb(160, 206, 78); border: 0px solid rgb(255, 255, 255);" class="progress progress-bar-content"></div></div> <span style="color:#ffffff;" class="progress-title"><span class="fusion-progressbar-text">Solid Progress Bar</span> <span class="fusion-progressbar-value">' . round($percent) . '%</span></span></div>';
- 				
- 				
- 				
- 				
- 				
- 				
- 				
- 				echo $stepTable;
+ 				echo round($percent);
+ 				echo "JETZT KOMMT ES" . $stepTable;
  			}
  			
  		}
@@ -74,9 +60,7 @@ if( isset($_POST['goobi-startdate']) && $_POST['goobi-startdate'] !='' ){
  	}else{
  		echo '<div class="goobi-alert fusion-alert alert error alert-dismissable alert-danger alert-shadow"><span class="alert-icon"><i class="fa fa-lg fa-exclamation-triangle"></i></span>No jobs found for the given time range from ' . $_POST['goobi-startdate'] . ' til today.</div>';
  	}
-    
+ 
 
-    // --------------------------------------------------------------------------------------------------------------------------------------
-}
-
-[/insert_php]
+ 	// --------------------------------------------------------------------------------------------------------------------------------------
+?>
