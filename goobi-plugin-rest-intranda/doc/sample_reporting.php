@@ -2,7 +2,7 @@
 
 $goobiUrl = 'http://demo03.intranda.com/goobi/';
 $goobiToken = 'test';
-$pageUrl = 'https://adminre.intranda.com/?page_id=388';
+$pageUrl = 'https://adminre.intranda.com/?page_id=315';
 
 echo '<form action="' . $pageUrl . '" method="post">';
 echo '<div class="row"><div class="col-sm-3 goobi-label">Start date:</div><div class="col-sm-6"><input type="text" name="goobi-startdate" />';
@@ -19,20 +19,22 @@ if( isset($_POST['goobi-startdate']) && $_POST['goobi-startdate'] !='' ){
     
 	if (count($data)) {
  		echo '<div class="goobi-alert fusion-alert alert error alert-dismissable alert-success alert-shadow"><span class="alert-icon"><i class="fa fa-lg fa-check"></i></span>' . count($data) . ' jobs found for the given time range from ' . $_POST['goobi-startdate'] . ' til today.</div>';
- 		echo "\r\n";
  		
+		echo '<div class="row" style="font-size:13px; margin-bottom:10px">';
+		echo '<div class="col-sm-4"><b>Job title</b></div>';
+		echo '<div class="col-sm-3"><b>Progress</b></div>';
+		echo '<div class="col-sm-2"><b>Job ID</b></div>';
+		echo '<div class="col-sm-3"><b>Job date</b></div>';
+		echo '</div>';
+		
  		foreach ($data as $process) {
- 			
- 			echo '<hr class="goobi-hr"/>';
- 			echo '<div class="row"><div class="col-sm-5"><h2>Job title:<b> ' . $process->title . '</b></h2></div><div class="col-sm-2 pull-right"><h2 style="text-align:right">Job ID: <b>' . $process->id . '</b></h2></div><div class="col-sm-5"><h2 style="text-align:left">Job date: <b>' . $process->creationDate . '</b></h2></div></div>';
- 			echo "\r\n";
+ 			$done = 0;
+ 			$stepTable = "";
  			
  			if (count($process->step)) {
- 				$done = 0;
- 				$stepTable = "";
- 				$stepTable = $stepTable . '<div class="table-1"><table class="table table-bordered goobi-table">';
+ 				
+ 				$stepTable = $stepTable . '<div id="' . $process->title . '" style="display:none; margin:20px; padding:5px; background-color:#eee" class="table-1"><table class="table table-bordered goobi-table" style="margin-top:0px">';
  				foreach ($process->step as $step) {
- 					echo "\r\n";
  					$stepTable = $stepTable . "<tr>";
  					$stepTable = $stepTable . "<td>$step->order</td>";
  					$stepTable = $stepTable . "<td>$step->title</td>";
@@ -51,23 +53,26 @@ if( isset($_POST['goobi-startdate']) && $_POST['goobi-startdate'] !='' ){
  					$stepTable = $stepTable . "</tr>";
  				}
  				$stepTable = $stepTable . "</table></div>";
- 				$percent = $done * 100 / count($process->step);
- 				echo "\r\n";
- 				echo "\r\n";
- 				//echo round($percent);
  				
- 				
- 				
- 				echo '<div class="fusion-progressbar fusion-progressbar-text-on-bar"><div class="fusion-progressbar-bar progress-bar" style="background-color:#f6f6f6;height:37px;"><div aria-valuenow="' . round($percent) . '" aria-valuemax="100" aria-valuemin="0" role="progressbar" style="width: ' . round($percent) . '%; background-color: rgb(160, 206, 78); border: 0px solid rgb(255, 255, 255);" class="progress progress-bar-content"></div></div> <span style="color:#ffffff;" class="progress-title"><span class="fusion-progressbar-text">Solid Progress Bar</span> <span class="fusion-progressbar-value">' . round($percent) . '%</span></span></div>';
- 				
- 				
- 				
- 				
- 				
- 				
- 				
- 				echo $stepTable;
  			}
+ 			
+ 			$percent = $done * 100 / count($process->step);
+			
+			// echo '<hr class="goobi-hr"/>';
+ 			
+ 			echo '<div class="row" style="font-size:13px;">';
+ 			//echo '<div class="col-sm-4" style="text-decoration:underline;cursor:pointer;" onclick="toggle_visibility(\\'' . $process->title . '\\');">' . $process->title . '</div>';
+ 			echo '<div class="col-sm-4" style="text-decoration:underline;cursor:pointer;">' . $process->title . '</div>';
+ 			
+ 			echo '<div class="col-sm-3">';
+ 			echo '<div class="fusion-progressbar fusion-progressbar-text-on-bar"><div class="fusion-progressbar-bar progress-bar" style="background-color:#f6f6f6;height:17px;"><div aria-valuenow="' . round($percent) . '" aria-valuemax="100" aria-valuemin="0" role="progressbar" style="width: ' . round($percent) . '%; background-color: green; border: 0px solid;" class="progress progress-bar-content"/></div></div></div>';
+			echo '</div>';
+			
+ 			echo '<div class="col-sm-2">' . $process->id . '</div>';
+ 			echo '<div class="col-sm-3">' . $process->creationDate . '</div>';
+ 			
+ 			echo '</div>';
+ 			echo $stepTable;
  			
  		}
  		
@@ -80,3 +85,15 @@ if( isset($_POST['goobi-startdate']) && $_POST['goobi-startdate'] !='' ){
 }
 
 [/insert_php]
+
+<script type="text/javascript">
+<!--
+    function toggle_visibility(id) {
+       var e = document.getElementById(id);
+       if(e.style.display == 'block')
+          e.style.display = 'none';
+       else
+          e.style.display = 'block';
+    }
+//-->
+</script>
