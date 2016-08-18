@@ -16,14 +16,15 @@
 ++++++++++++++   Process details   ++++++++++++++
 Get detailed information about a process and all its steps incl. progress, user and dates
 
-http://localhost:8080/Goobi/api/process/details/json/12?token=test
-http://localhost:8080/Goobi/api/process/details/xml/12?token=test
+http://localhost:8080/Goobi/api/process/details/id/MY_ID?token=test
+http://localhost:8080/Goobi/api/process/details/title/MY_TITLE?token=test
 
 
 ++++++++++++++   Process check   ++++++++++++++
 A quick check if a process exists and images do exist for this process
 
-http://localhost:8080/Goobi/api/process/check/12?token=test
+http://localhost:8080/Goobi/api/process/check/id/MY_ID?token=test
+http://localhost:8080/Goobi/api/process/check/title/MY_TITLE?token=test
 
 
 ++++++++++++++   Process report time range  ++++++++++++++
@@ -41,7 +42,8 @@ http://localhost:8080/Goobi/api/process/report/2016-05-01/?token=test
 ++++++++++++++   Process download   ++++++++++++++
 Download all images of a process as a zip file
 
-http://localhost:8080/Goobi/api/process/download/12?token=test
+http://localhost:8080/Goobi/api/process/download/id/MY_ID?token=test
+http://localhost:8080/Goobi/api/process/download/title/MY_TITLE?token=test
 
 
 
