@@ -7,7 +7,7 @@
 		<!-- Schaltet alle Methoden unterhalb von /process frei: -->
 		<command name="/process"/>
 		<!-- Voller Zugriff: -->
-		<command name="addStep"/>
+		<command name="/"/>
 	</credentials>		
 
 #####################   Get process infomation   #####################
