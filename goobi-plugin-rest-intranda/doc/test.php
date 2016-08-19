@@ -7,7 +7,7 @@
  $pageUrl = 'https://adminre.intranda.com/?page_id=388';
  
 
- 	$url = $goobiUrl . 'api/process/report/' . '2015-01-01' . '?token=' . $goobiToken;
+ 	$url = $goobiUrl . 'api/process/check/title/' . '3_01' . '?token=' . $goobiToken;
  	$json = file_get_contents($url);
  	$data =  json_decode($json);
  

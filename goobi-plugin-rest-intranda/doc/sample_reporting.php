@@ -61,8 +61,7 @@ if( isset($_POST['goobi-startdate']) && $_POST['goobi-startdate'] !='' ){
 			// echo '<hr class="goobi-hr"/>';
  			
  			echo '<div class="row" style="font-size:13px;">';
- 			//echo '<div class="col-sm-4" style="text-decoration:underline;cursor:pointer;" onclick="toggle_visibility(\\'' . $process->title . '\\');">' . $process->title . '</div>';
- 			echo '<div class="col-sm-4" style="text-decoration:underline;cursor:pointer;">' . $process->title . '</div>';
+ 			echo '<div class="col-sm-4" style="cursor:pointer;" onclick="toggle_visibility(\\'' . $process->title . '\\');"><span id="chevron_' . $process->title . '" class="fa fa-chevron-right" style="margin-right:5px;color:#eee"></span><div title="' . $process->title . '" style="overflow:hidden;text-overflow: ellipsis;max-width:170px;display:inline-block;vertical-align:bottom;">' . $process->title . '</div></div>';
  			
  			echo '<div class="col-sm-3">';
  			echo '<div class="fusion-progressbar fusion-progressbar-text-on-bar"><div class="fusion-progressbar-bar progress-bar" style="background-color:#f6f6f6;height:17px;"><div aria-valuenow="' . round($percent) . '" aria-valuemax="100" aria-valuemin="0" role="progressbar" style="width: ' . round($percent) . '%; background-color: green; border: 0px solid;" class="progress progress-bar-content"/></div></div></div>';
@@ -86,14 +85,23 @@ if( isset($_POST['goobi-startdate']) && $_POST['goobi-startdate'] !='' ){
 
 [/insert_php]
 
-<script type="text/javascript">
-<!--
-    function toggle_visibility(id) {
-       var e = document.getElementById(id);
-       if(e.style.display == 'block')
-          e.style.display = 'none';
-       else
-          e.style.display = 'block';
-    }
-//-->
-</script>
+	<script type="text/javascript">
+	
+	<!--
+	    function toggle_visibility(id) {
+			var e = document.getElementById(id);
+		    if(e.style.display == 'block'){
+		       e.style.display = 'none';
+		    }else{
+		       e.style.display = 'block';
+		    }
+	
+		    var e2 = document.getElementById('chevron_' + id);
+		    if(e2.className == 'fa fa-chevron-right'){
+		    	e2.className = 'fa fa-chevron-down';
+		    }else{
+		    	e2.className = 'fa fa-chevron-right';
+		    }
+	    }
+	//-->
+	</script>
