@@ -111,7 +111,7 @@ public class CommandProcessStatus {
     public Response getStatusOfProcess(@PathParam("processId") int processId) {
         Process p = ProcessManager.getProcessById(processId);
         if (p == null) {
-            return Response.status(Status.BAD_REQUEST).entity("Process not found").build();
+            return Response.status(Status.PARTIAL_CONTENT).entity("Process not found").build();
         }
         return checkStatusProcessContent(p);
     }
@@ -122,7 +122,7 @@ public class CommandProcessStatus {
     public Response getStatusOfProcess(@PathParam("processTitle") String processTitle) {
         Process p = ProcessManager.getProcessByTitle(processTitle);
         if (p == null) {
-            return Response.status(Status.BAD_REQUEST).entity("Process not found").build();
+            return Response.status(Status.PARTIAL_CONTENT).entity("Process not found").build();
         }
         return checkStatusProcessContent(p);
     }
