@@ -156,15 +156,21 @@ public class CommandProcessCreate {
     @Produces(MediaType.TEXT_XML)
     public CreationResponse createProcessWithoutOpac(StanfordCreationRequest req, @Context final HttpServletResponse response) {
         CreationResponse cr = new CreationResponse();
-log.info("start create");
+
+        Process p = ProcessManager.getProcessByTitle(req.getSourceID());
+        if (p != null) {
+            cr.setResult("error");
+            cr.setErrorText("Process " + req.getSourceID() + " already exists.");
+            cr.setProcessId(p.getId());
+            cr.setProcessName(p.getTitel());
+            return cr;
+        }
+        
         Process template = ProcessManager.getProcessByTitle(req.getTag_Project());
-        log.info("template loaded");
         Prefs prefs = template.getRegelsatz().getPreferences();
-        log.info("prefs loaded");
         Fileformat fileformat = null;
         try {
             fileformat = new MetsMods(prefs);
-            log.info("create new fileformat");
             DigitalDocument digDoc = new DigitalDocument();
             fileformat.setDigitalDocument(digDoc);
             DocStruct logical = digDoc.createDocStruct(prefs.getDocStrctTypeByName("Monograph"));
@@ -172,39 +178,41 @@ log.info("start create");
             digDoc.setLogicalDocStruct(logical);
             digDoc.setPhysicalDocStruct(physical);
 
-            log.info("Add metadata");
+          
             // metadata
 
             Metadata title = new Metadata(prefs.getMetadataTypeByName("TitleDocMain"));
             title.setValue(req.getObjectLabel());
             logical.addMetadata(title);
-            log.info("title added");
+            
             Metadata identifierDigital = new Metadata(prefs.getMetadataTypeByName("CatalogIDDigital"));
             identifierDigital.setValue(req.getObjectID());
             logical.addMetadata(identifierDigital);
-            log.info("object id added");
+            
             Metadata identifierSource = new Metadata(prefs.getMetadataTypeByName("CatalogIDSource"));
             identifierSource.setValue(req.getSourceID());
             logical.addMetadata(identifierSource);
-            log.info("source id added");
+            
+            Metadata classification = new Metadata(prefs.getMetadataTypeByName("Classification"));
+            classification.setValue(req.getTag_Process());
+            logical.addMetadata(classification);
+            
         } catch (UGHException e) {
             cr.setResult("error");
-            cr.setErrorText("Error during metadata creation for " + req.getObjectID() + ": " + e.getMessage());
+            cr.setErrorText("Error during metadata creation for " + req.getSourceID() + ": " + e.getMessage());
             return cr;
         }
         Process process = cloneTemplate(template);
-        log.info("created process");
         // set title
-        process.setTitel(req.getTag_Process());
+        process.setTitel(req.getSourceID());
 
         try {
             NeuenProzessAnlegen(process, template, fileformat, prefs);
         } catch (Exception e) {
             cr.setResult("error");
-            cr.setErrorText("Error during process creation for " + req.getObjectID() + ": " + e.getMessage());
+            cr.setErrorText("Error during process creation for " + req.getSourceID() + ": " + e.getMessage());
             return cr;
         }
-        log.info("process saved");
         cr.setResult("success");
         cr.setProcessName(process.getTitel());
         cr.setProcessId(process.getId());
