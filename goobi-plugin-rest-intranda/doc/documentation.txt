@@ -58,8 +58,25 @@ http://localhost:8080/Goobi/api/process/create/108/GBV/85992694X/?token=test
 http://localhost:8080/Goobi/api/process/create/108/85992694X/?token=test
 
 
+++++++++++++++   Process creation for Stanford  ++++++++++++++
 
+Create a process in Goobi for the Stanford Argo REST calls. All parameters are stored as properties for a process. Addionally some metadata is stored in the METS file too.
 
+http://localhost:8080/Goobi/api/process/stanfordcreate
 
+The call must transfer such xml via POST:
+
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<creationRequest>
+   <objectID>123456</objectID>
+   <sourceID>76543</sourceID>
+   <objectLabel>My book label</objectLabel>
+   <tag_Process>My process tag</tag_Process>
+   <tag_ContentType>Monograph</tag_ContentType>
+   <tag_Project>ABC</tag_Project>
+   <workflowName>myWorkflowNameInGoobi</workflowName>
+</creationRequest>
+
+In the POST request the token has to be given as request header too.
 
 

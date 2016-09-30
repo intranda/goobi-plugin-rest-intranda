@@ -150,11 +150,11 @@ public class CommandProcessCreate {
         return cr;
     }
 
-    @Path("/create")
+    @Path("/stanfordcreate")
     @POST
     @Consumes(MediaType.TEXT_XML)
     @Produces(MediaType.TEXT_XML)
-    public CreationResponse createProcessWithoutOpac(StanfordCreationRequest req, @Context final HttpServletResponse response) {
+    public CreationResponse createProcessForStanford(StanfordCreationRequest req, @Context final HttpServletResponse response) {
         CreationResponse cr = new CreationResponse();
 
         Process p = ProcessManager.getProcessByTitle(req.getSourceID());

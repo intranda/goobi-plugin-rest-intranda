@@ -15,7 +15,7 @@ public class TestClient {
         Client client = ClientBuilder.newClient();
         WebTarget goobiBase = client.target("http://demo03.intranda.com/goobi/api");
         WebTarget process = goobiBase.path("process");
-        WebTarget creation = process.path("create");
+        WebTarget creation = process.path("stanfordcreate");
 
         StanfordCreationRequest req = new StanfordCreationRequest();
 
