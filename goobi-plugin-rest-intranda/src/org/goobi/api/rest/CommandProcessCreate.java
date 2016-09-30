@@ -17,6 +17,7 @@ import javax.ws.rs.core.UriInfo;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.SystemUtils;
 import org.goobi.api.rest.request.CreationRequest;
+import org.goobi.api.rest.request.StanfordCreationRequest;
 import org.goobi.api.rest.response.CreationResponse;
 import org.goobi.beans.Process;
 import org.goobi.beans.Processproperty;
@@ -28,12 +29,15 @@ import org.goobi.production.flow.jobs.HistoryAnalyserJob;
 import org.goobi.production.plugin.PluginLoader;
 import org.goobi.production.plugin.interfaces.IOpacPlugin;
 
+import ugh.dl.DigitalDocument;
 import ugh.dl.DocStruct;
 import ugh.dl.Fileformat;
 import ugh.dl.Metadata;
 import ugh.dl.MetadataType;
 import ugh.dl.Prefs;
 import ugh.exceptions.MetadataTypeNotAllowedException;
+import ugh.exceptions.UGHException;
+import ugh.fileformats.mets.MetsMods;
 import de.sub.goobi.helper.BeanHelper;
 import de.sub.goobi.helper.Helper;
 import de.sub.goobi.helper.ScriptThreadWithoutHibernate;
@@ -45,8 +49,10 @@ import de.sub.goobi.persistence.managers.PropertyManager;
 import de.sub.goobi.persistence.managers.StepManager;
 import de.unigoettingen.sub.search.opac.ConfigOpac;
 import de.unigoettingen.sub.search.opac.ConfigOpacCatalogue;
+import lombok.extern.log4j.Log4j;
 
 @Path("/process")
+@Log4j
 public class CommandProcessCreate {
 
     @Context
@@ -85,21 +91,22 @@ public class CommandProcessCreate {
         return cr;
     }
 
- // TODO wieder entfernen. get ist nicht erlaubt. Entweder POST oder PUT
+    // TODO wieder entfernen. get ist nicht erlaubt. Entweder POST oder PUT
     @Path("create/{templateid}/{catalogueid}")
     @GET
     @Produces("text/json")
     public CreationResponse createNewProcess(@PathParam("templateid") int templateId, @PathParam("catalogueid") String catalogueId) {
-    	return createNewProcess(templateId, "GBV", catalogueId);
+        return createNewProcess(templateId, "GBV", catalogueId);
     }
-    
+
     // TODO wieder entfernen. get ist nicht erlaubt. Entweder POST oder PUT
     @Path("create/{templateid}/{catalogue}/{catalogueid}")
     @GET
     @Produces("text/json")
-    public CreationResponse createNewProcess(@PathParam("templateid") int templateId, @PathParam("catalogue") String catalogue, @PathParam("catalogueid") String catalogueId) {
-    	CreationResponse cr = new CreationResponse();
-        
+    public CreationResponse createNewProcess(@PathParam("templateid") int templateId, @PathParam("catalogue") String catalogue,
+            @PathParam("catalogueid") String catalogueId) {
+        CreationResponse cr = new CreationResponse();
+
         String opacIdentifier = catalogueId;
         String myCatalogue = catalogue;
         String processTitle = catalogueId;
@@ -142,69 +149,130 @@ public class CommandProcessCreate {
         cr.setProcessId(process.getId());
         return cr;
     }
-    
-//    @Path("/test")
-//    @POST
-//    @Consumes(MediaType.TEXT_XML)
-//    public CreationResponse createNewProcessPost(CreationRequest req, @Context final HttpServletResponse response) {
-//        CreationResponse cr = new CreationResponse();
-//        String errorText = req.validateRequest(req);
-//
-//        if (!errorText.isEmpty()) {
-//            cr.setResult("failure");
-//            cr.setErrorText(errorText);
-//            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-//            return cr;
-//        }
-//
-//        String opacIdentifier = req.getIdentifier();
-//
-//        String processTitle = req.getOrder_number() + "_" + req.getItem_in_order() + req.getLastname();
-//
-//        Process p = ProcessManager.getProcessByTitle(processTitle);
-//        if (p != null) {
-//            cr.setResult("failure");
-//            cr.setErrorText("Process " + processTitle + " already exists.");
-//            cr.setProcessId(p.getId());
-//            cr.setProcessName(p.getTitel());
-//            response.setStatus(HttpServletResponse.SC_CONFLICT);
-//            return cr;
-//        }
-//
-//        Process template = ProcessManager.getProcessById(req.getProcess_template());
-//        Prefs prefs = template.getRegelsatz().getPreferences();
-//        Fileformat ff = null;
-//        try {
-//            ff = getOpacRequest(opacIdentifier, prefs);
-//
-//        } catch (Exception e) {
-//            cr.setResult("failure");
-//            cr.setErrorText("Error during opac request for " + opacIdentifier + ": " + e.getMessage());
-//            response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-//            return cr;
-//        }
-//
-//        Process process = cloneTemplate(template);
-//        // set title
-//        process.setTitel(processTitle);
-//
-//        try {
-//            NeuenProzessAnlegen(process, template, ff, prefs);
-//        } catch (Exception e) {
-//            cr.setResult("failure");
-//            cr.setErrorText("Error during process creation for " + opacIdentifier + ": " + e.getMessage());
-//            response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-//            return cr;
-//        }
-//
-//        createProperties(req, process);
-//
-//        cr.setResult("success");
-//        cr.setProcessName(process.getTitel());
-//        cr.setProcessId(process.getId());
-//        return cr;
-//
-//    }
+
+    @Path("/create")
+    @POST
+    @Consumes(MediaType.TEXT_XML)
+    @Produces(MediaType.TEXT_XML)
+    public CreationResponse createProcessWithoutOpac(StanfordCreationRequest req, @Context final HttpServletResponse response) {
+        CreationResponse cr = new CreationResponse();
+log.info("start create");
+        Process template = ProcessManager.getProcessByTitle(req.getTag_Project());
+        log.info("template loaded");
+        Prefs prefs = template.getRegelsatz().getPreferences();
+        log.info("prefs loaded");
+        Fileformat fileformat = null;
+        try {
+            fileformat = new MetsMods(prefs);
+            log.info("create new fileformat");
+            DigitalDocument digDoc = new DigitalDocument();
+            fileformat.setDigitalDocument(digDoc);
+            DocStruct logical = digDoc.createDocStruct(prefs.getDocStrctTypeByName("Monograph"));
+            DocStruct physical = digDoc.createDocStruct(prefs.getDocStrctTypeByName("BoundBook"));
+            digDoc.setLogicalDocStruct(logical);
+            digDoc.setPhysicalDocStruct(physical);
+
+            log.info("Add metadata");
+            // metadata
+
+            Metadata title = new Metadata(prefs.getMetadataTypeByName("TitleDocMain"));
+            title.setValue(req.getObjectLabel());
+            logical.addMetadata(title);
+            log.info("title added");
+            Metadata identifierDigital = new Metadata(prefs.getMetadataTypeByName("CatalogIDDigital"));
+            identifierDigital.setValue(req.getObjectID());
+            logical.addMetadata(identifierDigital);
+            log.info("object id added");
+            Metadata identifierSource = new Metadata(prefs.getMetadataTypeByName("CatalogIDSource"));
+            identifierSource.setValue(req.getSourceID());
+            logical.addMetadata(identifierSource);
+            log.info("source id added");
+        } catch (UGHException e) {
+            cr.setResult("error");
+            cr.setErrorText("Error during metadata creation for " + req.getObjectID() + ": " + e.getMessage());
+            return cr;
+        }
+        Process process = cloneTemplate(template);
+        log.info("created process");
+        // set title
+        process.setTitel(req.getTag_Process());
+
+        try {
+            NeuenProzessAnlegen(process, template, fileformat, prefs);
+        } catch (Exception e) {
+            cr.setResult("error");
+            cr.setErrorText("Error during process creation for " + req.getObjectID() + ": " + e.getMessage());
+            return cr;
+        }
+        log.info("process saved");
+        cr.setResult("success");
+        cr.setProcessName(process.getTitel());
+        cr.setProcessId(process.getId());
+        return cr;
+    }
+
+    //    @Path("/test")
+    //    @POST
+    //    @Consumes(MediaType.TEXT_XML)
+    //    public CreationResponse createNewProcessPost(CreationRequest req, @Context final HttpServletResponse response) {
+    //        CreationResponse cr = new CreationResponse();
+    //        String errorText = req.validateRequest(req);
+    //
+    //        if (!errorText.isEmpty()) {
+    //            cr.setResult("failure");
+    //            cr.setErrorText(errorText);
+    //            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+    //            return cr;
+    //        }
+    //
+    //        String opacIdentifier = req.getIdentifier();
+    //
+    //        String processTitle = req.getOrder_number() + "_" + req.getItem_in_order() + req.getLastname();
+    //
+    //        Process p = ProcessManager.getProcessByTitle(processTitle);
+    //        if (p != null) {
+    //            cr.setResult("failure");
+    //            cr.setErrorText("Process " + processTitle + " already exists.");
+    //            cr.setProcessId(p.getId());
+    //            cr.setProcessName(p.getTitel());
+    //            response.setStatus(HttpServletResponse.SC_CONFLICT);
+    //            return cr;
+    //        }
+    //
+    //        Process template = ProcessManager.getProcessById(req.getProcess_template());
+    //        Prefs prefs = template.getRegelsatz().getPreferences();
+    //        Fileformat ff = null;
+    //        try {
+    //            ff = getOpacRequest(opacIdentifier, prefs);
+    //
+    //        } catch (Exception e) {
+    //            cr.setResult("failure");
+    //            cr.setErrorText("Error during opac request for " + opacIdentifier + ": " + e.getMessage());
+    //            response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+    //            return cr;
+    //        }
+    //
+    //        Process process = cloneTemplate(template);
+    //        // set title
+    //        process.setTitel(processTitle);
+    //
+    //        try {
+    //            NeuenProzessAnlegen(process, template, ff, prefs);
+    //        } catch (Exception e) {
+    //            cr.setResult("failure");
+    //            cr.setErrorText("Error during process creation for " + opacIdentifier + ": " + e.getMessage());
+    //            response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+    //            return cr;
+    //        }
+    //
+    //        createProperties(req, process);
+    //
+    //        cr.setResult("success");
+    //        cr.setProcessName(process.getTitel());
+    //        cr.setProcessId(process.getId());
+    //        return cr;
+    //
+    //    }
 
     private void createProperties(CreationRequest req, Process process) {
         int id = process.getId();
@@ -332,7 +400,7 @@ public class CommandProcessCreate {
     }
 
     private Fileformat getOpacRequest(String opacIdentifier, Prefs prefs, String myCatalogue) throws Exception {
-// TODO
+        // TODO
         // get logical data from opac
         ConfigOpacCatalogue coc = new ConfigOpac().getCatalogueByName(myCatalogue);
         IOpacPlugin myImportOpac = (IOpacPlugin) PluginLoader.getPluginByTitle(PluginType.Opac, coc.getOpacType());

@@ -6,37 +6,33 @@ import javax.ws.rs.client.Entity;
 import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.MediaType;
 
-import org.goobi.api.rest.request.CreationRequest;
+import org.goobi.api.rest.request.StanfordCreationRequest;
 import org.goobi.api.rest.response.CreationResponse;
 
 public class TestClient {
 
-    
     public static void main(String[] args) {
         Client client = ClientBuilder.newClient();
-        WebTarget goobiBase = client.target("http://localhost:8080/Goobi/api");
-        WebTarget creation = goobiBase.path("creation");
-        
-        
-        CreationRequest req = new CreationRequest();
-        req.setAll_pages(true);
-        req.setBtw_number(123);
-        req.setClient_instructions("instructions");
-        req.setEmail("john@doe.com");
-        req.setIdentifier("003192975");
-        req.setItem_in_order(987);
-        req.setLastname("lastname");
-        req.setOrder_number(1);
-        req.setPage_numbers("1-7");
-        req.setProcess_template(5217);
-        req.setSalutation("not sure");
-        req.setSignature("shelfmark");
+        WebTarget goobiBase = client.target("http://demo03.intranda.com/goobi/api");
+        WebTarget process = goobiBase.path("process");
+        WebTarget creation = process.path("create");
+        StanfordCreationRequest req = new StanfordCreationRequest();
 
-        
-        Entity<CreationRequest> ent = Entity.entity(req, MediaType.TEXT_XML);
-        CreationResponse response2 = creation.request().header("token", "test").post(ent, CreationResponse.class);
+        req.setObjectID("123456");
+        req.setObjectLabel("Main title of the book");
 
-        System.out.println(response2);
-        
+        req.setSourceID("98765");
+        // content type is hard coded in plugin
+        req.setTag_ContentType("Monograph");
+        // must be a unique title, allowed characters: \w+
+        req.setTag_Process("test_process_12345");
+        // must match workflow name in goobi instance
+        req.setTag_Project("Example_Workflow");
+
+        Entity<StanfordCreationRequest> ent = Entity.entity(req, MediaType.TEXT_XML);
+        CreationResponse response = creation.request().header("token", "test").post(ent, CreationResponse.class);
+
+        System.out.println(response);
+
     }
 }
