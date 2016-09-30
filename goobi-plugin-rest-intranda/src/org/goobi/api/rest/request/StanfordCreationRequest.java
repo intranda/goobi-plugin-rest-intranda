@@ -14,5 +14,6 @@ public class StanfordCreationRequest {
     private String tag_Process;
     private String tag_ContentType;
     private String tag_Project;
+    private String workflowName;
 
 }

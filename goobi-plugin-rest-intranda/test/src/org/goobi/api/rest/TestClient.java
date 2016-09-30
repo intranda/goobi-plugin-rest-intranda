@@ -24,13 +24,16 @@ public class TestClient {
         // used as title of the digital object
         req.setObjectLabel("Main title of the book");
         // identifier of source, used ass process title
-        req.setSourceID("98765");
-        // content type is hard coded in plugin
-        req.setTag_ContentType("Monograph");
         // must be a unique title, allowed characters: \w+
+        req.setSourceID("98765");
+        // some tag for content type
+        req.setTag_ContentType("Monograph");
+        // some tag for process
         req.setTag_Process("some keyword for process");
+        // some tag for project
+        req.setTag_Project("my project tag");
         // must match workflow name in goobi instance
-        req.setTag_Project("Example_workflow_LayoutWizzard_Stanford");
+        req.setWorkflowName("Example_workflow_LayoutWizzard_Stanford");
 
         Entity<StanfordCreationRequest> ent = Entity.entity(req, MediaType.TEXT_XML);
         CreationResponse response = creation.request().header("token", "test").post(ent, CreationResponse.class);
@@ -39,3 +42,4 @@ public class TestClient {
 
     }
 }
+

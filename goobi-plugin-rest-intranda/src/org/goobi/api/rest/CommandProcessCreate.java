@@ -166,7 +166,7 @@ public class CommandProcessCreate {
             return cr;
         }
         
-        Process template = ProcessManager.getProcessByTitle(req.getTag_Project());
+        Process template = ProcessManager.getProcessByTitle(req.getWorkflowName());
         Prefs prefs = template.getRegelsatz().getPreferences();
         Fileformat fileformat = null;
         try {
@@ -213,6 +213,43 @@ public class CommandProcessCreate {
             cr.setErrorText("Error during process creation for " + req.getSourceID() + ": " + e.getMessage());
             return cr;
         }
+        
+        Processproperty idSource = new Processproperty();
+        idSource.setTitel("source_id");
+        idSource.setWert(req.getSourceID());
+        idSource.setProcessId(process.getId());
+        PropertyManager.saveProcessProperty(idSource);
+
+        Processproperty idObject = new Processproperty();
+        idObject.setTitel("object_id");
+        idObject.setWert(req.getObjectID());
+        idObject.setProcessId(process.getId());
+        PropertyManager.saveProcessProperty(idObject);
+        
+        Processproperty labelObject = new Processproperty();
+        labelObject.setTitel("object_label");
+        labelObject.setWert(req.getObjectLabel());
+        labelObject.setProcessId(process.getId());
+        PropertyManager.saveProcessProperty(labelObject);
+        
+        Processproperty tagProcess = new Processproperty();
+        tagProcess.setTitel("tag_process");
+        tagProcess.setWert(req.getTag_Process());
+        tagProcess.setProcessId(process.getId());
+        PropertyManager.saveProcessProperty(tagProcess);
+        
+        Processproperty tagProject = new Processproperty();
+        tagProject.setTitel("tag_project");
+        tagProject.setWert(req.getTag_Project());
+        tagProject.setProcessId(process.getId());
+        PropertyManager.saveProcessProperty(tagProject);
+        
+        Processproperty tagContentType = new Processproperty();
+        tagContentType.setTitel("tag_contentType");
+        tagContentType.setWert(req.getTag_ContentType());
+        tagContentType.setProcessId(process.getId());
+        PropertyManager.saveProcessProperty(tagContentType);
+        
         cr.setResult("success");
         cr.setProcessName(process.getTitel());
         cr.setProcessId(process.getId());
