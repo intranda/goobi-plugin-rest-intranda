@@ -9,7 +9,7 @@ import javax.ws.rs.core.MediaType;
 import org.goobi.api.rest.request.StanfordCreationRequest;
 import org.goobi.api.rest.response.CreationResponse;
 
-public class TestClient {
+public class StanfordTestClient {
 
     public static void main(String[] args) {
         Client client = ClientBuilder.newClient();
