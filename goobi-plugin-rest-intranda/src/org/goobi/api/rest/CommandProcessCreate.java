@@ -165,8 +165,8 @@ public class CommandProcessCreate {
             cr.setProcessName(p.getTitel());
             return cr;
         }
-        
-        Process template = ProcessManager.getProcessByTitle(req.getWorkflowName());
+
+        Process template = ProcessManager.getProcessByTitle(req.getGoobiWorkflow());
         Prefs prefs = template.getRegelsatz().getPreferences();
         Fileformat fileformat = null;
         try {
@@ -178,25 +178,24 @@ public class CommandProcessCreate {
             digDoc.setLogicalDocStruct(logical);
             digDoc.setPhysicalDocStruct(physical);
 
-          
             // metadata
 
             Metadata title = new Metadata(prefs.getMetadataTypeByName("TitleDocMain"));
-            title.setValue(req.getObjectLabel());
+            title.setValue(req.getTitle());
             logical.addMetadata(title);
-            
+
             Metadata identifierDigital = new Metadata(prefs.getMetadataTypeByName("CatalogIDDigital"));
             identifierDigital.setValue(req.getObjectID());
             logical.addMetadata(identifierDigital);
-            
+
             Metadata identifierSource = new Metadata(prefs.getMetadataTypeByName("CatalogIDSource"));
             identifierSource.setValue(req.getSourceID());
             logical.addMetadata(identifierSource);
-            
-            Metadata classification = new Metadata(prefs.getMetadataTypeByName("Classification"));
-            classification.setValue(req.getTag_Process());
+
+            Metadata classification = new Metadata(prefs.getMetadataTypeByName("singleDigCollection"));
+            classification.setValue(req.getCollectionName());
             logical.addMetadata(classification);
-            
+
         } catch (UGHException e) {
             cr.setResult("error");
             cr.setErrorText("Error during metadata creation for " + req.getSourceID() + ": " + e.getMessage());
@@ -213,217 +212,84 @@ public class CommandProcessCreate {
             cr.setErrorText("Error during process creation for " + req.getSourceID() + ": " + e.getMessage());
             return cr;
         }
+
+        Processproperty idObject = new Processproperty();
+        idObject.setTitel("objectId");
+        idObject.setWert(req.getObjectID());
+        idObject.setProcessId(process.getId());
+        PropertyManager.saveProcessProperty(idObject);
+
+        Processproperty objectType = new Processproperty();
+        objectType.setTitel("objectType");
+        objectType.setWert(req.getObjectType());
+        objectType.setProcessId(process.getId());
+        PropertyManager.saveProcessProperty(objectType);
+
         
         Processproperty idSource = new Processproperty();
-        idSource.setTitel("source_id");
+        idSource.setTitel("sourceID");
         idSource.setWert(req.getSourceID());
         idSource.setProcessId(process.getId());
         PropertyManager.saveProcessProperty(idSource);
 
-        Processproperty idObject = new Processproperty();
-        idObject.setTitel("object_id");
-        idObject.setWert(req.getObjectID());
-        idObject.setProcessId(process.getId());
-        PropertyManager.saveProcessProperty(idObject);
-        
         Processproperty labelObject = new Processproperty();
-        labelObject.setTitel("object_label");
-        labelObject.setWert(req.getObjectLabel());
+        labelObject.setTitel("title");
+        labelObject.setWert(req.getTitle());
         labelObject.setProcessId(process.getId());
         PropertyManager.saveProcessProperty(labelObject);
-        
+
         Processproperty tagProcess = new Processproperty();
-        tagProcess.setTitel("tag_process");
-        tagProcess.setWert(req.getTag_Process());
+        tagProcess.setTitel("contentType");
+        tagProcess.setWert(req.getContentType());
         tagProcess.setProcessId(process.getId());
         PropertyManager.saveProcessProperty(tagProcess);
-        
+
         Processproperty tagProject = new Processproperty();
-        tagProject.setTitel("tag_project");
-        tagProject.setWert(req.getTag_Project());
+        tagProject.setTitel("project");
+        tagProject.setWert(req.getProject());
         tagProject.setProcessId(process.getId());
         PropertyManager.saveProcessProperty(tagProject);
-        
-        Processproperty tagContentType = new Processproperty();
-        tagContentType.setTitel("tag_contentType");
-        tagContentType.setWert(req.getTag_ContentType());
-        tagContentType.setProcessId(process.getId());
-        PropertyManager.saveProcessProperty(tagContentType);
-        
+
+        Processproperty catkey = new Processproperty();
+        catkey.setTitel("catkey");
+        catkey.setWert(req.getCatkey());
+        catkey.setProcessId(process.getId());
+        PropertyManager.saveProcessProperty(catkey);
+
+        Processproperty barcode = new Processproperty();
+        barcode.setTitel("barcode");
+        barcode.setWert(req.getBarcode());
+        barcode.setProcessId(process.getId());
+        PropertyManager.saveProcessProperty(barcode);
+
+        Processproperty collectionId = new Processproperty();
+        collectionId.setTitel("collectionId");
+        collectionId.setWert(req.getCollectionId());
+        collectionId.setProcessId(process.getId());
+        PropertyManager.saveProcessProperty(collectionId);
+
+        Processproperty collectionName = new Processproperty();
+        collectionName.setTitel("collectionName");
+        collectionName.setWert(req.getCollectionName());
+        collectionName.setProcessId(process.getId());
+        PropertyManager.saveProcessProperty(collectionName);
+
+        Processproperty sdrWorkflow = new Processproperty();
+        sdrWorkflow.setTitel("sdrWorkflow");
+        sdrWorkflow.setWert(req.getSdrWorkflow());
+        sdrWorkflow.setProcessId(process.getId());
+        PropertyManager.saveProcessProperty(sdrWorkflow);
+
+        Processproperty goobiWorkflow = new Processproperty();
+        goobiWorkflow.setTitel("goobiWorkflow");
+        goobiWorkflow.setWert(req.getGoobiWorkflow());
+        goobiWorkflow.setProcessId(process.getId());
+        PropertyManager.saveProcessProperty(goobiWorkflow);
+
         cr.setResult("success");
         cr.setProcessName(process.getTitel());
         cr.setProcessId(process.getId());
         return cr;
-    }
-
-    //    @Path("/test")
-    //    @POST
-    //    @Consumes(MediaType.TEXT_XML)
-    //    public CreationResponse createNewProcessPost(CreationRequest req, @Context final HttpServletResponse response) {
-    //        CreationResponse cr = new CreationResponse();
-    //        String errorText = req.validateRequest(req);
-    //
-    //        if (!errorText.isEmpty()) {
-    //            cr.setResult("failure");
-    //            cr.setErrorText(errorText);
-    //            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-    //            return cr;
-    //        }
-    //
-    //        String opacIdentifier = req.getIdentifier();
-    //
-    //        String processTitle = req.getOrder_number() + "_" + req.getItem_in_order() + req.getLastname();
-    //
-    //        Process p = ProcessManager.getProcessByTitle(processTitle);
-    //        if (p != null) {
-    //            cr.setResult("failure");
-    //            cr.setErrorText("Process " + processTitle + " already exists.");
-    //            cr.setProcessId(p.getId());
-    //            cr.setProcessName(p.getTitel());
-    //            response.setStatus(HttpServletResponse.SC_CONFLICT);
-    //            return cr;
-    //        }
-    //
-    //        Process template = ProcessManager.getProcessById(req.getProcess_template());
-    //        Prefs prefs = template.getRegelsatz().getPreferences();
-    //        Fileformat ff = null;
-    //        try {
-    //            ff = getOpacRequest(opacIdentifier, prefs);
-    //
-    //        } catch (Exception e) {
-    //            cr.setResult("failure");
-    //            cr.setErrorText("Error during opac request for " + opacIdentifier + ": " + e.getMessage());
-    //            response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-    //            return cr;
-    //        }
-    //
-    //        Process process = cloneTemplate(template);
-    //        // set title
-    //        process.setTitel(processTitle);
-    //
-    //        try {
-    //            NeuenProzessAnlegen(process, template, ff, prefs);
-    //        } catch (Exception e) {
-    //            cr.setResult("failure");
-    //            cr.setErrorText("Error during process creation for " + opacIdentifier + ": " + e.getMessage());
-    //            response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-    //            return cr;
-    //        }
-    //
-    //        createProperties(req, process);
-    //
-    //        cr.setResult("success");
-    //        cr.setProcessName(process.getTitel());
-    //        cr.setProcessId(process.getId());
-    //        return cr;
-    //
-    //    }
-
-    private void createProperties(CreationRequest req, Process process) {
-        int id = process.getId();
-
-        if (StringUtils.isNotBlank(req.getSignature())) {
-            Processproperty pp = new Processproperty();
-            pp.setTitel("shelfmark");
-            pp.setWert(req.getSignature());
-            pp.setProcessId(id);
-            PropertyManager.saveProcessProperty(pp);
-        }
-
-        Processproperty identifier = new Processproperty();
-        identifier.setTitel("identifier");
-        identifier.setWert(req.getIdentifier());
-        identifier.setProcessId(id);
-        PropertyManager.saveProcessProperty(identifier);
-
-        Processproperty lastname = new Processproperty();
-        lastname.setTitel("lastname");
-        lastname.setWert(req.getLastname());
-        lastname.setProcessId(id);
-        PropertyManager.saveProcessProperty(lastname);
-
-        Processproperty salutation = new Processproperty();
-        salutation.setTitel("salutation");
-        salutation.setWert(req.getSalutation());
-        salutation.setProcessId(id);
-        PropertyManager.saveProcessProperty(salutation);
-
-        Processproperty email = new Processproperty();
-        email.setTitel("email");
-        email.setWert(req.getEmail());
-        email.setProcessId(id);
-        PropertyManager.saveProcessProperty(email);
-
-        Processproperty order_number = new Processproperty();
-        order_number.setTitel("order_number");
-        order_number.setWert(String.valueOf(req.getOrder_number()));
-        order_number.setProcessId(id);
-        PropertyManager.saveProcessProperty(order_number);
-
-        Processproperty item_in_order = new Processproperty();
-        item_in_order.setTitel("item_in_order");
-        item_in_order.setWert(String.valueOf(req.getItem_in_order()));
-        item_in_order.setProcessId(id);
-        PropertyManager.saveProcessProperty(item_in_order);
-
-        if (req.getBtw_number() != 0) {
-            Processproperty btw_number = new Processproperty();
-            btw_number.setTitel("lastname");
-            btw_number.setWert(String.valueOf(req.getBtw_number()));
-            btw_number.setProcessId(id);
-            PropertyManager.saveProcessProperty(btw_number);
-        }
-
-        Processproperty all_pages = new Processproperty();
-        all_pages.setTitel("all_pages");
-        all_pages.setWert(String.valueOf(req.isAll_pages()));
-        all_pages.setProcessId(id);
-        PropertyManager.saveProcessProperty(all_pages);
-
-        Processproperty page_numbers = new Processproperty();
-        page_numbers.setTitel("page_numbers");
-        page_numbers.setWert(req.getPage_numbers());
-        page_numbers.setProcessId(id);
-        PropertyManager.saveProcessProperty(page_numbers);
-
-        if (StringUtils.isNotBlank(req.getClient_instructions())) {
-            Processproperty client_instructions = new Processproperty();
-            client_instructions.setTitel("client_instructions");
-            client_instructions.setWert(req.getClient_instructions());
-            client_instructions.setProcessId(id);
-            PropertyManager.saveProcessProperty(client_instructions);
-        }
-
-        List<StringPair> metadata = MetadataManager.getMetadata(id);
-
-        for (StringPair sp : metadata) {
-            if (sp.getOne().equals("TitleDocMain")) {
-                Processproperty title = new Processproperty();
-                title.setTitel("displayed title");
-                title.setWert(sp.getTwo());
-                title.setProcessId(id);
-                PropertyManager.saveProcessProperty(title);
-            } else if (sp.getOne().equals("ListOfCreators")) {
-                Processproperty title = new Processproperty();
-                title.setTitel("displayed authors");
-                title.setWert(sp.getTwo());
-                title.setProcessId(id);
-                PropertyManager.saveProcessProperty(title);
-            } else if (sp.getOne().equals("PublicationYear")) {
-                Processproperty title = new Processproperty();
-                title.setTitel(" publication year");
-                title.setWert(sp.getTwo());
-                title.setProcessId(id);
-                PropertyManager.saveProcessProperty(title);
-            } else if (sp.getOne().equals("shelfmarksource")) {
-                Processproperty title = new Processproperty();
-                title.setTitel(" displayed shelfmark");
-                title.setWert(sp.getTwo());
-                title.setProcessId(id);
-                PropertyManager.saveProcessProperty(title);
-            }
-
-        }
     }
 
     private Process cloneTemplate(Process template) {

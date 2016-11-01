@@ -8,12 +8,18 @@ import lombok.Data;
 @XmlRootElement
 public class StanfordCreationRequest {
 
-    private String objectID;
-    private String sourceID;
-    private String objectLabel;
-    private String tag_Process;
-    private String tag_ContentType;
-    private String tag_Project;
-    private String workflowName;
+    private String objectID; // druid:xx123yy4567
+    private String objectType; // item
+    private String sourceID; // source:76543
+    private String title; // book title
+    private String contentType; // image
+    private String  project; // goobi project??
+    private String catkey; // 31232818
+    private String barcode; // 1029287645
+    private String  collectionId; // druid:xx123yy4567
+    private String  collectionName; // Fitch Photographs
+    private String  sdrWorkflow; // dpgImageWF
+    private String  goobiWorkflow; // workflow name
+   
 
 }
