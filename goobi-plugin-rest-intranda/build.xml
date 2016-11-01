@@ -1,21 +1,16 @@
-<?xml version="1.0"?>
-
-<!-- ADJUST PROJECT NAME, FILENAME AND INCLUDED CLASSES FOR JENKINS IF YOU COPY THIS FILE TO A NEW PROJECT-->
-
 <project name="Goobi RESTful Plugin" basedir="." default="deploy">
 
     <!-- ================================= 
-	        properties             
-	     ================================= -->
+    	        properties             
+    	     ================================= -->
     <property name="filename" value="intranda-rest-api" />
     <property name="dir.build" value="bin" />
     <property name="dir.deploy" value="deploy" />
-    <property name="pluginFolderWin" value="C:/Goobi/plugins/" />
-    <property name="pluginFolderUnix" value="/opt/digiverso/goobi/plugins/" />
-	<property name="goobiLibFolder" value="/opt/digiverso/git/goobi/Goobi/webapp/WEB-INF/lib/" />
+    <property name="pluginFolderWin" value="C:/Goobi/plugins/GUI/" />
+    <property name="pluginFolderUnix" value="/opt/digiverso/goobi/plugins/GUI/" />
 
     <path id="classpath">
-        <fileset dir="/opt/digiverso/goobi-jsf2/lib" />
+        <fileset dir="/opt/digiverso/goobilibs/lib" />
         <fileset dir="/opt/digiverso/libs" />
     </path>
 
@@ -24,8 +19,8 @@
     </tstamp>
 
     <!-- ================================= 
-         General targets: clean, createDirs, git.revision
-	     ================================= -->
+             General targets: clean, createDirs, git.revision
+    	     ================================= -->
 
     <!-- Clean up generated and compiled files. -->
     <target name="clean" description="Clean up generated and compiled files.">
@@ -59,12 +54,12 @@
     </target>
 
     <!-- ================================= 
-         copy all files to final places
-	     ================================= -->
+             copy all files to final places
+    	     ================================= -->
 
     <!--  copyToPluginFolder, depending on OS -->
     <target name="copyToPluginFolder" depends="linux,win32">
-    	<antcall target="clean" />
+        <antcall target="clean" />
     </target>
     <target name="linux" if="isUnix">
         <echo>Using Linux path: ${pluginFolderUnix}</echo>
@@ -77,8 +72,8 @@
     </target>
 
     <!-- ================================= 
-         Compile the sources
-	     ================================= -->
+             Compile the sources
+    	     ================================= -->
 
 
 
@@ -94,11 +89,11 @@
 
 
     <!-- ================================= 
-         Compile the jar
-	     ================================= -->
+             Compile the jar
+    	     ================================= -->
 
 
-    <target name="jar" >
+    <target name="jar">
         <jar destfile="${dir.deploy}/${filename}-${git.revision}.jar">
             <manifest>
                 <attribute name="Main-Class" value="de.intranda.goobi.PluginInfo" />
@@ -116,10 +111,10 @@
                 <attribute name="Class-Path" value="${libs.project}" />
             </manifest>
             <fileset dir="GUI">
-                           <include name="META-INF/faces-config.xml" />
-                       </fileset>
+                <include name="META-INF/faces-config.xml" />
+            </fileset>
             <fileset dir="bin">
-               
+
             </fileset>
 
         </jar>
@@ -127,8 +122,8 @@
 
 
     <!-- ================================= 
-	              RUNNABLE JAR
-		 ================================= -->
+    	              RUNNABLE JAR
+    		 ================================= -->
 
     <target name="jar.runnable" depends="git.revision">
         <echo>Compile sources ...</echo>
@@ -137,15 +132,15 @@
     </target>
 
     <!-- ================================= 
-                  DISTRIBUTION
-	     ================================= -->
+                      DISTRIBUTION
+    	     ================================= -->
 
     <!-- Run all targets in appropiate order for clean compile-->
     <target name="dist" depends="clean, createDirs, git.revision, jar.runnable" description="Creating everything for Jenkins." />
 
     <!-- ================================= 
-                  DEPLOY
-	     ================================= -->
+                      DEPLOY
+    	     ================================= -->
 
     <!-- Default target that compiles the jar from eclipse and copies it to the right folder depending on operating system-->
     <target name="deploy" depends="jar.runnable" description="Default target for Eclipse compiling with correct deployment">
@@ -156,20 +151,8 @@
             <os family="unix" />
         </condition>
         <antcall target="copyToPluginFolder" />
-    	<echo>Please move the compiled file ${filename}.jar now into the Goobi WEB-INF/lib folder.</echo>
-        <echo>intranda... alles ist gut!</echo>
-    </target>
-	
-	
-	<!-- ================================= 
-                  DEPLOY
-	     ================================= -->
-
-    <!-- Default target that compiles the jar from eclipse and copies it to the right folder depending on operating system-->
-    <target name="goobi" depends="jar.runnable" description="Target for Eclipse compiling to Goobi lib folder">
-        <copy tofile="${goobiLibFolder}/${filename}.jar" file="${dir.deploy}/${filename}.jar" overwrite="true" />
-    	<antcall target="clean" />
         <echo>intranda... alles ist gut!</echo>
     </target>
 
 </project>
+
