@@ -179,23 +179,24 @@ public class CommandProcessCreate {
             digDoc.setPhysicalDocStruct(physical);
 
             // metadata
-
-            Metadata title = new Metadata(prefs.getMetadataTypeByName("TitleDocMain"));
-            title.setValue(req.getTitle());
-            logical.addMetadata(title);
-
+            if (StringUtils.isNotBlank(req.getTitle())) {
+                Metadata title = new Metadata(prefs.getMetadataTypeByName("TitleDocMain"));
+                title.setValue(req.getTitle());
+                logical.addMetadata(title);
+            }
             Metadata identifierDigital = new Metadata(prefs.getMetadataTypeByName("CatalogIDDigital"));
             identifierDigital.setValue(req.getObjectID());
             logical.addMetadata(identifierDigital);
-
-            Metadata identifierSource = new Metadata(prefs.getMetadataTypeByName("CatalogIDSource"));
-            identifierSource.setValue(req.getSourceID());
-            logical.addMetadata(identifierSource);
-
-            Metadata classification = new Metadata(prefs.getMetadataTypeByName("singleDigCollection"));
-            classification.setValue(req.getCollectionName());
-            logical.addMetadata(classification);
-
+            if (StringUtils.isNotBlank(req.getSourceID())) {
+                Metadata identifierSource = new Metadata(prefs.getMetadataTypeByName("CatalogIDSource"));
+                identifierSource.setValue(req.getSourceID());
+                logical.addMetadata(identifierSource);
+            }
+            if (StringUtils.isNotBlank(req.getCollectionName())) {
+                Metadata classification = new Metadata(prefs.getMetadataTypeByName("singleDigCollection"));
+                classification.setValue(req.getCollectionName());
+                logical.addMetadata(classification);
+            }
         } catch (UGHException e) {
             cr.setResult("error");
             cr.setErrorText("Error during metadata creation for " + req.getSourceID() + ": " + e.getMessage());
@@ -212,80 +213,90 @@ public class CommandProcessCreate {
             cr.setErrorText("Error during process creation for " + req.getSourceID() + ": " + e.getMessage());
             return cr;
         }
-
-        Processproperty idObject = new Processproperty();
-        idObject.setTitel("objectId");
-        idObject.setWert(req.getObjectID());
-        idObject.setProcessId(process.getId());
-        PropertyManager.saveProcessProperty(idObject);
-
-        Processproperty objectType = new Processproperty();
-        objectType.setTitel("objectType");
-        objectType.setWert(req.getObjectType());
-        objectType.setProcessId(process.getId());
-        PropertyManager.saveProcessProperty(objectType);
-
-        
-        Processproperty idSource = new Processproperty();
-        idSource.setTitel("sourceID");
-        idSource.setWert(req.getSourceID());
-        idSource.setProcessId(process.getId());
-        PropertyManager.saveProcessProperty(idSource);
-
-        Processproperty labelObject = new Processproperty();
-        labelObject.setTitel("title");
-        labelObject.setWert(req.getTitle());
-        labelObject.setProcessId(process.getId());
-        PropertyManager.saveProcessProperty(labelObject);
-
-        Processproperty tagProcess = new Processproperty();
-        tagProcess.setTitel("contentType");
-        tagProcess.setWert(req.getContentType());
-        tagProcess.setProcessId(process.getId());
-        PropertyManager.saveProcessProperty(tagProcess);
-
-        Processproperty tagProject = new Processproperty();
-        tagProject.setTitel("project");
-        tagProject.setWert(req.getProject());
-        tagProject.setProcessId(process.getId());
-        PropertyManager.saveProcessProperty(tagProject);
-
-        Processproperty catkey = new Processproperty();
-        catkey.setTitel("catkey");
-        catkey.setWert(req.getCatkey());
-        catkey.setProcessId(process.getId());
-        PropertyManager.saveProcessProperty(catkey);
-
-        Processproperty barcode = new Processproperty();
-        barcode.setTitel("barcode");
-        barcode.setWert(req.getBarcode());
-        barcode.setProcessId(process.getId());
-        PropertyManager.saveProcessProperty(barcode);
-
-        Processproperty collectionId = new Processproperty();
-        collectionId.setTitel("collectionId");
-        collectionId.setWert(req.getCollectionId());
-        collectionId.setProcessId(process.getId());
-        PropertyManager.saveProcessProperty(collectionId);
-
-        Processproperty collectionName = new Processproperty();
-        collectionName.setTitel("collectionName");
-        collectionName.setWert(req.getCollectionName());
-        collectionName.setProcessId(process.getId());
-        PropertyManager.saveProcessProperty(collectionName);
-
-        Processproperty sdrWorkflow = new Processproperty();
-        sdrWorkflow.setTitel("sdrWorkflow");
-        sdrWorkflow.setWert(req.getSdrWorkflow());
-        sdrWorkflow.setProcessId(process.getId());
-        PropertyManager.saveProcessProperty(sdrWorkflow);
-
-        Processproperty goobiWorkflow = new Processproperty();
-        goobiWorkflow.setTitel("goobiWorkflow");
-        goobiWorkflow.setWert(req.getGoobiWorkflow());
-        goobiWorkflow.setProcessId(process.getId());
-        PropertyManager.saveProcessProperty(goobiWorkflow);
-
+        if (StringUtils.isNotBlank(req.getObjectID())) {
+            Processproperty idObject = new Processproperty();
+            idObject.setTitel("objectId");
+            idObject.setWert(req.getObjectID());
+            idObject.setProcessId(process.getId());
+            PropertyManager.saveProcessProperty(idObject);
+        }
+        if (StringUtils.isNotBlank(req.getObjectType())) {
+            Processproperty objectType = new Processproperty();
+            objectType.setTitel("objectType");
+            objectType.setWert(req.getObjectType());
+            objectType.setProcessId(process.getId());
+            PropertyManager.saveProcessProperty(objectType);
+        }
+        if (StringUtils.isNotBlank(req.getSourceID())) {
+            Processproperty idSource = new Processproperty();
+            idSource.setTitel("sourceID");
+            idSource.setWert(req.getSourceID());
+            idSource.setProcessId(process.getId());
+            PropertyManager.saveProcessProperty(idSource);
+        }
+        if (StringUtils.isNotBlank(req.getTitle())) {
+            Processproperty labelObject = new Processproperty();
+            labelObject.setTitel("title");
+            labelObject.setWert(req.getTitle());
+            labelObject.setProcessId(process.getId());
+            PropertyManager.saveProcessProperty(labelObject);
+        }
+        if (StringUtils.isNotBlank(req.getContentType())) {
+            Processproperty tagProcess = new Processproperty();
+            tagProcess.setTitel("contentType");
+            tagProcess.setWert(req.getContentType());
+            tagProcess.setProcessId(process.getId());
+            PropertyManager.saveProcessProperty(tagProcess);
+        }
+        if (StringUtils.isNotBlank(req.getProject())) {
+            Processproperty tagProject = new Processproperty();
+            tagProject.setTitel("project");
+            tagProject.setWert(req.getProject());
+            tagProject.setProcessId(process.getId());
+            PropertyManager.saveProcessProperty(tagProject);
+        }
+        if (StringUtils.isNotBlank(req.getCatkey())) {
+            Processproperty catkey = new Processproperty();
+            catkey.setTitel("catkey");
+            catkey.setWert(req.getCatkey());
+            catkey.setProcessId(process.getId());
+            PropertyManager.saveProcessProperty(catkey);
+        }
+        if (StringUtils.isNotBlank(req.getBarcode())) {
+            Processproperty barcode = new Processproperty();
+            barcode.setTitel("barcode");
+            barcode.setWert(req.getBarcode());
+            barcode.setProcessId(process.getId());
+            PropertyManager.saveProcessProperty(barcode);
+        }
+        if (StringUtils.isNotBlank(req.getCollectionId())) {
+            Processproperty collectionId = new Processproperty();
+            collectionId.setTitel("collectionId");
+            collectionId.setWert(req.getCollectionId());
+            collectionId.setProcessId(process.getId());
+            PropertyManager.saveProcessProperty(collectionId);
+        }
+        if (StringUtils.isNotBlank(req.getCollectionName())) {
+            Processproperty collectionName = new Processproperty();
+            collectionName.setTitel("collectionName");
+            collectionName.setWert(req.getCollectionName());
+            collectionName.setProcessId(process.getId());
+            PropertyManager.saveProcessProperty(collectionName);
+        }
+        if (StringUtils.isNotBlank(req.getSdrWorkflow())) {
+            Processproperty sdrWorkflow = new Processproperty();
+            sdrWorkflow.setTitel("sdrWorkflow");
+            sdrWorkflow.setWert(req.getSdrWorkflow());
+            sdrWorkflow.setProcessId(process.getId());
+            PropertyManager.saveProcessProperty(sdrWorkflow);
+        }
+        if (StringUtils.isNotBlank(req.getGoobiWorkflow())) {
+            Processproperty goobiWorkflow = new Processproperty();
+            goobiWorkflow.setTitel("goobiWorkflow");
+            goobiWorkflow.setWert(req.getGoobiWorkflow());
+            goobiWorkflow.setProcessId(process.getId());
+            PropertyManager.saveProcessProperty(goobiWorkflow);
+        }
         cr.setResult("success");
         cr.setProcessName(process.getTitel());
         cr.setProcessId(process.getId());
