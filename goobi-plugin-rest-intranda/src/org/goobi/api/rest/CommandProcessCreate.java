@@ -170,8 +170,6 @@ public class CommandProcessCreate {
         if (template == null) {
             cr.setResult("error");
             cr.setErrorText("Process template " + req.getGoobiWorkflow() + " does not exist.");
-            cr.setProcessId(p.getId());
-            cr.setProcessName(p.getTitel());
         }
         
         
