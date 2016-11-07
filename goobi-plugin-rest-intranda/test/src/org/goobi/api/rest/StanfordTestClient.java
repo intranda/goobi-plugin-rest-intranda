@@ -25,7 +25,7 @@ public class StanfordTestClient {
         req.setObjectType("item");
         // identifier of source, used ass process title
         // must be a unique title, allowed characters: \w+
-        req.setSourceID("98765-2016-11-07");
+        req.setSourceID("987653");
 
         // used as title of the digital object
         req.setTitle("Main title of the book");
@@ -39,7 +39,7 @@ public class StanfordTestClient {
         req.setSdrWorkflow("dpgImageWF");
 
         // must match workflow name in goobi instance
-        req.setGoobiWorkflow("Example_Workflow");
+        req.setGoobiWorkflow("Example_Workflow1");
 
 
         Entity<StanfordCreationRequest> ent = Entity.entity(req, MediaType.TEXT_XML);
