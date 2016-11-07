@@ -152,7 +152,7 @@ public class CommandProcessCreate {
 
     @Path("/stanfordcreate")
     @POST
-    @Consumes(MediaType.TEXT_XML)
+    @Consumes({MediaType.TEXT_XML, MediaType.APPLICATION_XML})
     @Produces(MediaType.TEXT_XML)
     public CreationResponse createProcessForStanford(StanfordCreationRequest req, @Context final HttpServletResponse response) {
         CreationResponse cr = new CreationResponse();
@@ -167,6 +167,14 @@ public class CommandProcessCreate {
         }
 
         Process template = ProcessManager.getProcessByTitle(req.getGoobiWorkflow());
+        if (template == null) {
+            cr.setResult("error");
+            cr.setErrorText("Process template " + req.getGoobiWorkflow() + " does not exist.");
+            cr.setProcessId(p.getId());
+            cr.setProcessName(p.getTitel());
+        }
+        
+        
         Prefs prefs = template.getRegelsatz().getPreferences();
         Fileformat fileformat = null;
         try {
