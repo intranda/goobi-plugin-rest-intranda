@@ -23,7 +23,6 @@ import org.goobi.beans.Process;
 import org.goobi.beans.Processproperty;
 import org.goobi.beans.Step;
 import org.goobi.managedbeans.LoginBean;
-import org.goobi.production.cli.helper.StringPair;
 import org.goobi.production.enums.PluginType;
 import org.goobi.production.flow.jobs.HistoryAnalyserJob;
 import org.goobi.production.plugin.PluginLoader;
@@ -43,7 +42,6 @@ import de.sub.goobi.helper.Helper;
 import de.sub.goobi.helper.ScriptThreadWithoutHibernate;
 import de.sub.goobi.helper.enums.StepEditType;
 import de.sub.goobi.helper.enums.StepStatus;
-import de.sub.goobi.persistence.managers.MetadataManager;
 import de.sub.goobi.persistence.managers.ProcessManager;
 import de.sub.goobi.persistence.managers.PropertyManager;
 import de.sub.goobi.persistence.managers.StepManager;
@@ -163,6 +161,7 @@ public class CommandProcessCreate {
             cr.setErrorText("Process " + req.getSourceID() + " already exists.");
             cr.setProcessId(p.getId());
             cr.setProcessName(p.getTitel());
+            response.setStatus(HttpServletResponse.SC_CONFLICT);
             return cr;
         }
 
@@ -172,6 +171,7 @@ public class CommandProcessCreate {
             cr.setErrorText("Process template " + req.getGoobiWorkflow() + " does not exist.");
             cr.setProcessId(0);
             cr.setProcessName(req.getSourceID());
+            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
             return cr;
         }
         
@@ -209,6 +209,7 @@ public class CommandProcessCreate {
         } catch (UGHException e) {
             cr.setResult("error");
             cr.setErrorText("Error during metadata creation for " + req.getSourceID() + ": " + e.getMessage());
+            response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
             return cr;
         }
         Process process = cloneTemplate(template);
@@ -220,6 +221,7 @@ public class CommandProcessCreate {
         } catch (Exception e) {
             cr.setResult("error");
             cr.setErrorText("Error during process creation for " + req.getSourceID() + ": " + e.getMessage());
+            response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
             return cr;
         }
         if (StringUtils.isNotBlank(req.getObjectID())) {
@@ -309,6 +311,7 @@ public class CommandProcessCreate {
         cr.setResult("success");
         cr.setProcessName(process.getTitel());
         cr.setProcessId(process.getId());
+        response.setStatus(HttpServletResponse.SC_CREATED);
         return cr;
     }
 
