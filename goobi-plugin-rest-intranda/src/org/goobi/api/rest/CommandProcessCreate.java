@@ -12,6 +12,7 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 
 import org.apache.commons.lang.StringUtils;
@@ -152,7 +153,7 @@ public class CommandProcessCreate {
     @POST
     @Consumes({MediaType.TEXT_XML, MediaType.APPLICATION_XML})
     @Produces(MediaType.TEXT_XML)
-    public CreationResponse createProcessForStanford(StanfordCreationRequest req, @Context final HttpServletResponse response) {
+    public Response createProcessForStanford(StanfordCreationRequest req, @Context final HttpServletResponse response) {
         CreationResponse cr = new CreationResponse();
 
         Process p = ProcessManager.getProcessByTitle(req.getSourceID());
@@ -161,8 +162,9 @@ public class CommandProcessCreate {
             cr.setErrorText("Process " + req.getSourceID() + " already exists.");
             cr.setProcessId(p.getId());
             cr.setProcessName(p.getTitel());
-            response.setStatus(HttpServletResponse.SC_CONFLICT);
-            return cr;
+//            response.setStatus(HttpServletResponse.SC_CONFLICT);
+            Response resp = Response.status(Response.Status.CONFLICT).entity(cr).build();
+            return resp;
         }
 
         Process template = ProcessManager.getProcessByTitle(req.getGoobiWorkflow());
@@ -171,8 +173,8 @@ public class CommandProcessCreate {
             cr.setErrorText("Process template " + req.getGoobiWorkflow() + " does not exist.");
             cr.setProcessId(0);
             cr.setProcessName(req.getSourceID());
-            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-            return cr;
+            Response resp = Response.status(Response.Status.BAD_REQUEST).entity(cr).build();
+            return resp;
         }
         
         
@@ -209,8 +211,8 @@ public class CommandProcessCreate {
         } catch (UGHException e) {
             cr.setResult("error");
             cr.setErrorText("Error during metadata creation for " + req.getSourceID() + ": " + e.getMessage());
-            response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-            return cr;
+            Response resp = Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(cr).build();
+            return resp;
         }
         Process process = cloneTemplate(template);
         // set title
@@ -221,8 +223,8 @@ public class CommandProcessCreate {
         } catch (Exception e) {
             cr.setResult("error");
             cr.setErrorText("Error during process creation for " + req.getSourceID() + ": " + e.getMessage());
-            response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-            return cr;
+            Response resp = Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(cr).build();
+            return resp;
         }
         if (StringUtils.isNotBlank(req.getObjectID())) {
             Processproperty idObject = new Processproperty();
@@ -311,8 +313,8 @@ public class CommandProcessCreate {
         cr.setResult("success");
         cr.setProcessName(process.getTitel());
         cr.setProcessId(process.getId());
-        response.setStatus(HttpServletResponse.SC_CREATED);
-        return cr;
+        Response resp = Response.status(Response.Status.CREATED).entity(cr).build();
+        return resp;      
     }
 
     private Process cloneTemplate(Process template) {
