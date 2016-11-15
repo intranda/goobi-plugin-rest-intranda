@@ -196,7 +196,7 @@ public class CommandProcessCreate {
                 logical.addMetadata(title);
             }
             Metadata identifierDigital = new Metadata(prefs.getMetadataTypeByName("CatalogIDDigital"));
-            identifierDigital.setValue(req.getObjectID());
+            identifierDigital.setValue(req.getObjectId());
             logical.addMetadata(identifierDigital);
             if (StringUtils.isNotBlank(req.getSourceID())) {
                 Metadata identifierSource = new Metadata(prefs.getMetadataTypeByName("CatalogIDSource"));
@@ -226,10 +226,10 @@ public class CommandProcessCreate {
             Response resp = Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(cr).build();
             return resp;
         }
-        if (StringUtils.isNotBlank(req.getObjectID())) {
+        if (StringUtils.isNotBlank(req.getObjectId())) {
             Processproperty idObject = new Processproperty();
             idObject.setTitel("objectId");
-            idObject.setWert(req.getObjectID());
+            idObject.setWert(req.getObjectId());
             idObject.setProcessId(process.getId());
             PropertyManager.saveProcessProperty(idObject);
         }

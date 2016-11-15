@@ -8,7 +8,7 @@ import lombok.Data;
 @XmlRootElement
 public class StanfordCreationRequest {
 
-    private String objectID; // druid:xx123yy4567
+    private String objectId; // druid:xx123yy4567
     private String objectType; // item
     private String sourceID; // source:76543
     private String title; // book title

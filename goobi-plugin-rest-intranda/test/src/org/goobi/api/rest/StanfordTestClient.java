@@ -20,7 +20,7 @@ public class StanfordTestClient {
         StanfordCreationRequest req = new StanfordCreationRequest();
 
         // used as identifier of the digital object
-        req.setObjectID("123456");
+        req.setObjectId("123456");
 
         req.setObjectType("item");
         // identifier of source, used ass process title
