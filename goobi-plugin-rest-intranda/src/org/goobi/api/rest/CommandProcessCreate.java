@@ -108,7 +108,7 @@ public class CommandProcessCreate {
 
         String opacIdentifier = catalogueId;
         String myCatalogue = catalogue;
-        String processTitle = catalogueId.replace(":", "_");
+        String processTitle = catalogueId;
 
         Process p = ProcessManager.getProcessByTitle(processTitle);
         if (p != null) {
@@ -216,7 +216,7 @@ public class CommandProcessCreate {
         }
         Process process = cloneTemplate(template);
         // set title
-        process.setTitel(req.getSourceID());
+        process.setTitel(req.getSourceID().replace(":", "_"));
 
         try {
             NeuenProzessAnlegen(process, template, fileformat, prefs);
