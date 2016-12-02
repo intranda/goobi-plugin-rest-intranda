@@ -108,7 +108,7 @@ public class CommandProcessCreate {
 
         String opacIdentifier = catalogueId;
         String myCatalogue = catalogue;
-        String processTitle = catalogueId;
+        String processTitle = catalogueId.replace(":", "_");
 
         Process p = ProcessManager.getProcessByTitle(processTitle);
         if (p != null) {
