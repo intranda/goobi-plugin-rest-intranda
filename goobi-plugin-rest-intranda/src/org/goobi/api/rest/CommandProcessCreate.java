@@ -155,8 +155,8 @@ public class CommandProcessCreate {
     @Produces(MediaType.TEXT_XML)
     public Response createProcessForStanford(StanfordCreationRequest req, @Context final HttpServletResponse response) {
         CreationResponse cr = new CreationResponse();
-
-        Process p = ProcessManager.getProcessByTitle(req.getSourceID());
+String processtitle = req.getSourceID().replace(":", "_");
+        Process p = ProcessManager.getProcessByTitle(processtitle);
         if (p != null) {
             cr.setResult("error");
             cr.setErrorText("Process " + req.getSourceID() + " already exists.");
@@ -216,7 +216,7 @@ public class CommandProcessCreate {
         }
         Process process = cloneTemplate(template);
         // set title
-        process.setTitel(req.getSourceID().replace(":", "_"));
+        process.setTitel(processtitle);
 
         try {
             NeuenProzessAnlegen(process, template, fileformat, prefs);
