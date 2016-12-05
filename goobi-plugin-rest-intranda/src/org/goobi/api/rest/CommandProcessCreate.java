@@ -41,6 +41,7 @@ import ugh.fileformats.mets.MetsMods;
 import de.sub.goobi.helper.BeanHelper;
 import de.sub.goobi.helper.Helper;
 import de.sub.goobi.helper.ScriptThreadWithoutHibernate;
+import de.sub.goobi.helper.UghHelper;
 import de.sub.goobi.helper.enums.StepEditType;
 import de.sub.goobi.helper.enums.StepStatus;
 import de.sub.goobi.persistence.managers.ProcessManager;
@@ -151,18 +152,20 @@ public class CommandProcessCreate {
 
     @Path("/stanfordcreate")
     @POST
-    @Consumes({MediaType.TEXT_XML, MediaType.APPLICATION_XML})
+    @Consumes({ MediaType.TEXT_XML, MediaType.APPLICATION_XML })
     @Produces(MediaType.TEXT_XML)
     public Response createProcessForStanford(StanfordCreationRequest req, @Context final HttpServletResponse response) {
         CreationResponse cr = new CreationResponse();
-String processtitle = req.getSourceID().replace(":", "_");
+        String processtitle = UghHelper.convertUmlaut(req.getSourceID()).toLowerCase();
+        processtitle.replaceAll("[\\W]", "");
+
         Process p = ProcessManager.getProcessByTitle(processtitle);
         if (p != null) {
             cr.setResult("error");
             cr.setErrorText("Process " + req.getSourceID() + " already exists.");
             cr.setProcessId(p.getId());
             cr.setProcessName(p.getTitel());
-//            response.setStatus(HttpServletResponse.SC_CONFLICT);
+            //            response.setStatus(HttpServletResponse.SC_CONFLICT);
             Response resp = Response.status(Response.Status.CONFLICT).entity(cr).build();
             return resp;
         }
@@ -176,8 +179,7 @@ String processtitle = req.getSourceID().replace(":", "_");
             Response resp = Response.status(Response.Status.BAD_REQUEST).entity(cr).build();
             return resp;
         }
-        
-        
+
         Prefs prefs = template.getRegelsatz().getPreferences();
         Fileformat fileformat = null;
         try {
@@ -314,7 +316,7 @@ String processtitle = req.getSourceID().replace(":", "_");
         cr.setProcessName(process.getTitel());
         cr.setProcessId(process.getId());
         Response resp = Response.status(Response.Status.CREATED).entity(cr).build();
-        return resp;      
+        return resp;
     }
 
     private Process cloneTemplate(Process template) {
