@@ -49,10 +49,9 @@ import de.sub.goobi.persistence.managers.PropertyManager;
 import de.sub.goobi.persistence.managers.StepManager;
 import de.unigoettingen.sub.search.opac.ConfigOpac;
 import de.unigoettingen.sub.search.opac.ConfigOpacCatalogue;
-import lombok.extern.log4j.Log4j;
 
 @Path("/process")
-@Log4j
+
 public class CommandProcessCreate {
 
     @Context
@@ -156,7 +155,7 @@ public class CommandProcessCreate {
     @Produces(MediaType.TEXT_XML)
     public Response createProcessForStanford(StanfordCreationRequest req, @Context final HttpServletResponse response) {
         CreationResponse cr = new CreationResponse();
-        String processtitle = UghHelper.convertUmlaut(req.getSourceID()).toLowerCase();
+        String processtitle = UghHelper.convertUmlaut(req.getSourceID().replace(":","_")).toLowerCase();
         processtitle.replaceAll("[\\W]", "");
 
         Process p = ProcessManager.getProcessByTitle(processtitle);
@@ -338,7 +337,6 @@ public class CommandProcessCreate {
     }
 
     private Fileformat getOpacRequest(String opacIdentifier, Prefs prefs, String myCatalogue) throws Exception {
-        // TODO
         // get logical data from opac
         ConfigOpacCatalogue coc = new ConfigOpac().getCatalogueByName(myCatalogue);
         IOpacPlugin myImportOpac = (IOpacPlugin) PluginLoader.getPluginByTitle(PluginType.Opac, coc.getOpacType());
