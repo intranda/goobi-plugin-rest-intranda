@@ -27,18 +27,6 @@ public class CommandProcessDelete {
     @Context
     UriInfo uriInfo;
 
-    @Path("/response")
-    @GET
-    @Produces("text/json")
-    public DeletionResponse helloWorld() {
-        DeletionResponse cr = new DeletionResponse();
-        cr.setProcessId(123);
-        cr.setErrorText("field order_number is missing or empty");
-        cr.setProcessName("34_Doe");
-        cr.setResult("failure");
-        return cr;
-    }
-
     @Path("delete/id/{processId}")
     @POST
     @Produces(MediaType.APPLICATION_XML)
