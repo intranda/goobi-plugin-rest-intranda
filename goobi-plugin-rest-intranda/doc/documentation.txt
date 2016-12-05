@@ -79,4 +79,9 @@ The call must transfer such xml via POST:
 
 In the POST request the token has to be given as request header too.
 
+#####################   Delete processes   #####################
 
+++++++++++++++   Delete a process from goobi.  ++++++++++++++
+
+As post request:
+http://localhost:8080/Goobi/api/process/delete/id/1234?token=test
