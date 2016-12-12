@@ -66,16 +66,41 @@ http://localhost:8080/Goobi/api/process/stanfordcreate
 
 The call must transfer such xml via POST:
 
-<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<creationRequest>
-   <objectID>123456</objectID>
-   <sourceID>76543</sourceID>
-   <objectLabel>My book label</objectLabel>
-   <tag_Process>My process tag</tag_Process>
-   <tag_ContentType>Monograph</tag_ContentType>
-   <tag_Project>ABC</tag_Project>
-   <workflowName>myWorkflowNameInGoobi</workflowName>
-</creationRequest>
+<stanfordCreationRequest>
+   <objectId>druid:steffen</objectId>
+   <objectType>item</objectType>
+   <sourceID>sul:steffen</sourceID>
+   <title>George Stirling's heritage : a story of chequered love / by Graham Stark. author of "The laird and his friend"</title>
+   <contentType>Book (flipbook, ltr)</contentType>
+   <project>Jarndyce Single-Volume Nineteenth-Century Novel Collection</project>
+   <catkey>9370404</catkey>
+   <barcode></barcode>
+   <collectionId>druid:jt466yc7169</collectionId>
+   <collectionName>Jarndyce Single-Volume Nineteenth-Century Novel Collection, 1823-1914</collectionName>
+   <sdrWorkflow>goobiWF</sdrWorkflow>
+   <goobiWorkflow>Test_Workflow_QA_LAYOUTWIZZARD-Steffen-Demo-Please-Do-Not-Use</goobiWorkflow>
+</stanfordCreationRequest>
+
+In the POST request the token has to be given as request header too.
+
+++++++++++++++   Process creation for MPI  ++++++++++++++
+
+Create a process in Goobi for the MPI Berlin REST calls. All parameters are stored as properties for a process. Addionally some metadata is stored in the METS file.
+
+http://localhost:8080/Goobi/api/process/mpicreate
+
+The call must transfer such xml via POST:
+
+<mpiCreationRequest>
+   <user>abcUser</user>
+   <barcode>abcBarcode</barcode>
+   <signatur>abcSignatur</signatur>
+   <bestand>abcBestand</bestand>
+   <archiv>abcArchiv</archiv>
+   <titel>abcTitel</titel>
+   <kommentar>abcKommentar</kommentar>
+   <goobiWorkflow>Sample_Workflow</goobiWorkflow>
+</mpiCreationRequest>
 
 In the POST request the token has to be given as request header too.
 
