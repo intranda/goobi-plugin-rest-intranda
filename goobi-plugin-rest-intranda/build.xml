@@ -169,25 +169,6 @@
                 <antcall target="compile-jenkins" />
                 <antcall target="compile-eclipse" />
 
-                <echo>Generate Plugin list</echo>
-                <pathconvert property="plugins.project" pathsep=" ">
-                        <mapper>
-                                <chainedmapper>
-                                        <flattenmapper />
-                                        <globmapper from="*" to="*" />
-                                </chainedmapper>
-                        </mapper>
-                        <path>
-                                <!-- lib.home contains all jar files in several subdirectories -->
-                                <fileset dir="bin/de/intranda/goobi/plugins">
-                                        <include name="*.class" />
-                                </fileset>
-                        </path>
-                </pathconvert>
-
-                <antcall target="libs" />
-                <echo file="${dir.build}/de/intranda/goobi/plugins.txt">${plugins.project}  -----------------------------------------------------  Git-revision: ${git.revision}</echo>
-
                 <echo>Generating jar file: ${dir.deploy}/${filename}-${git.revision}.jar</echo>
                 <antcall target="jar-jenkins" />
                 <antcall target="jar-eclipse" />
