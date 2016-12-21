@@ -75,6 +75,26 @@
              Compile the sources
     	     ================================= -->
 
+        <target name="compile-jenkins" if="${jenkins}">
+                <echo>Using jenkins compiler</echo>
+                <javac destdir="${dir.build}" includeantruntime="false"  target="7" encoding="UTF8" source="7" debug="true" debuglevel="lines,vars,source">
+                        <classpath refid="classpath" />
+                        <compilerarg value="-Xlint" />
+                        <src path="src" />
+                        <!--                    <src path="../Goobi/WEB-INF/src" /> -->
+<!--            <src path="../Goobi/src" />
+                        <src path="../Goobi/src-dubious" />                     -->
+                </javac>
+        </target>
+
+        <target name="compile-eclipse" unless="jenkins">
+                <echo>Using eclipse compiler</echo>
+                <javac destdir="${dir.build}" includeantruntime="false"  target="7" encoding="UTF8" source="7" debug="true" debuglevel="lines,vars,source">
+                        <classpath refid="classpath" />
+                        <compilerarg value="-Xlint" />
+                        <src path="src" />
+                </javac>
+        </target>
 
 
     <target name="compile">
@@ -91,6 +111,25 @@
     <!-- ================================= 
              Compile the jar
     	     ================================= -->
+        <target name="jar-jenkins" if="jenkins">
+                <jar destfile="${dir.deploy}/${filename}-${git.revision}.jar">
+                        <manifest>
+                                <attribute name="Main-Class" value="de.intranda.goobi.PluginInfo" />
+                                <attribute name="Class-Path" value="${libs.project}" />
+                        </manifest>
+                        <fileset dir="bin"/>
+                </jar>
+        </target>
+
+        <target name="jar-eclipse" unless="jenkins">
+                <jar destfile="${dir.deploy}/${filename}-${git.revision}.jar">
+                        <manifest>
+                                <attribute name="Main-Class" value="de.intranda.goobi.PluginInfo" />
+                                <attribute name="Class-Path" value="${libs.project}" />
+                        </manifest>
+                        <fileset dir="bin" />
+                </jar>
+        </target>
 
 
     <target name="jar">
@@ -126,9 +165,33 @@
     		 ================================= -->
 
     <target name="jar.runnable" depends="git.revision">
-        <echo>Compile sources ...</echo>
-        <antcall target="compile" />
-        <antcall target="jar-gui" />
+	    <echo>Compile sources ...</echo>
+                <antcall target="compile-jenkins" />
+                <antcall target="compile-eclipse" />
+
+                <echo>Generate Plugin list</echo>
+                <pathconvert property="plugins.project" pathsep=" ">
+                        <mapper>
+                                <chainedmapper>
+                                        <flattenmapper />
+                                        <globmapper from="*" to="*" />
+                                </chainedmapper>
+                        </mapper>
+                        <path>
+                                <!-- lib.home contains all jar files in several subdirectories -->
+                                <fileset dir="bin/de/intranda/goobi/plugins">
+                                        <include name="*.class" />
+                                </fileset>
+                        </path>
+                </pathconvert>
+
+                <antcall target="libs" />
+                <echo file="${dir.build}/de/intranda/goobi/plugins.txt">${plugins.project}  -----------------------------------------------------  Git-revision: ${git.revision}</echo>
+
+                <echo>Generating jar file: ${dir.deploy}/${filename}-${git.revision}.jar</echo>
+                <antcall target="jar-jenkins" />
+                <antcall target="jar-eclipse" />
+	    
     </target>
 
     <!-- ================================= 
