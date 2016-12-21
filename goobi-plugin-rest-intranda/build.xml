@@ -3,7 +3,7 @@
     <!-- ================================= 
     	        properties             
     	     ================================= -->
-    <property name="filename" value="intranda-rest-api" />
+    <property name="filename" value="plugin_intranda_rest_default" />
     <property name="dir.build" value="bin" />
     <property name="dir.deploy" value="deploy" />
     <property name="pluginFolderWin" value="C:/Goobi/plugins/GUI/" />
@@ -63,7 +63,7 @@
     </target>
     <target name="linux" if="isUnix">
         <echo>Using Linux path: ${pluginFolderUnix}</echo>
-        <copy tofile="${pluginFolderUnix}/${filename}.jar" file="${dir.deploy}/${filename}.jar" overwrite="true" />
+	<copy tofile="${pluginFolderUnix}/${filename}.jar" file="${dir.deploy}/${filename}-${git.revision}.jar" overwrite="true" />
 
     </target>
     <target name="win32" if="isWindows">
