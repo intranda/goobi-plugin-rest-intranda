@@ -18,6 +18,7 @@ import javax.ws.rs.core.UriInfo;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.SystemUtils;
 import org.goobi.api.rest.request.CreationRequest;
+import org.goobi.api.rest.request.MpiCreationRequest;
 import org.goobi.api.rest.request.StanfordCreationRequest;
 import org.goobi.api.rest.response.CreationResponse;
 import org.goobi.beans.Process;
@@ -29,15 +30,6 @@ import org.goobi.production.flow.jobs.HistoryAnalyserJob;
 import org.goobi.production.plugin.PluginLoader;
 import org.goobi.production.plugin.interfaces.IOpacPlugin;
 
-import ugh.dl.DigitalDocument;
-import ugh.dl.DocStruct;
-import ugh.dl.Fileformat;
-import ugh.dl.Metadata;
-import ugh.dl.MetadataType;
-import ugh.dl.Prefs;
-import ugh.exceptions.MetadataTypeNotAllowedException;
-import ugh.exceptions.UGHException;
-import ugh.fileformats.mets.MetsMods;
 import de.sub.goobi.helper.BeanHelper;
 import de.sub.goobi.helper.Helper;
 import de.sub.goobi.helper.ScriptThreadWithoutHibernate;
@@ -49,6 +41,15 @@ import de.sub.goobi.persistence.managers.PropertyManager;
 import de.sub.goobi.persistence.managers.StepManager;
 import de.unigoettingen.sub.search.opac.ConfigOpac;
 import de.unigoettingen.sub.search.opac.ConfigOpacCatalogue;
+import ugh.dl.DigitalDocument;
+import ugh.dl.DocStruct;
+import ugh.dl.Fileformat;
+import ugh.dl.Metadata;
+import ugh.dl.MetadataType;
+import ugh.dl.Prefs;
+import ugh.exceptions.MetadataTypeNotAllowedException;
+import ugh.exceptions.UGHException;
+import ugh.fileformats.mets.MetsMods;
 
 @Path("/process")
 
@@ -301,6 +302,138 @@ public class CommandProcessCreate {
             sdrWorkflow.setWert(req.getSdrWorkflow());
             sdrWorkflow.setProcessId(process.getId());
             PropertyManager.saveProcessProperty(sdrWorkflow);
+        }
+        if (StringUtils.isNotBlank(req.getGoobiWorkflow())) {
+            Processproperty goobiWorkflow = new Processproperty();
+            goobiWorkflow.setTitel("goobiWorkflow");
+            goobiWorkflow.setWert(req.getGoobiWorkflow());
+            goobiWorkflow.setProcessId(process.getId());
+            PropertyManager.saveProcessProperty(goobiWorkflow);
+        }
+        cr.setResult("success");
+        cr.setProcessName(process.getTitel());
+        cr.setProcessId(process.getId());
+        Response resp = Response.status(Response.Status.CREATED).entity(cr).build();
+        return resp;
+    }
+    
+    @Path("/mpicreate")
+    @POST
+    @Consumes({ MediaType.TEXT_XML, MediaType.APPLICATION_XML })
+    @Produces(MediaType.TEXT_XML)
+    public Response createProcessForMPI(MpiCreationRequest req, @Context final HttpServletResponse response) {
+        CreationResponse cr = new CreationResponse();
+        String processtitle = UghHelper.convertUmlaut(req.getBarcode().replace(":","_")).toLowerCase();
+        processtitle.replaceAll("[\\W]", "");
+
+        Process p = ProcessManager.getProcessByTitle(processtitle);
+        if (p != null) {
+            cr.setResult("error");
+            cr.setErrorText("Process " + req.getBarcode() + " already exists.");
+            cr.setProcessId(p.getId());
+            cr.setProcessName(p.getTitel());
+            //            response.setStatus(HttpServletResponse.SC_CONFLICT);
+            Response resp = Response.status(Response.Status.CONFLICT).entity(cr).build();
+            return resp;
+        }
+
+        Process template = ProcessManager.getProcessByTitle(req.getGoobiWorkflow());
+        if (template == null) {
+            cr.setResult("error");
+            cr.setErrorText("Process template " + req.getGoobiWorkflow() + " does not exist.");
+            cr.setProcessId(0);
+            cr.setProcessName(req.getBarcode());
+            Response resp = Response.status(Response.Status.BAD_REQUEST).entity(cr).build();
+            return resp;
+        }
+
+        Prefs prefs = template.getRegelsatz().getPreferences();
+        Fileformat fileformat = null;
+        try {
+            fileformat = new MetsMods(prefs);
+            DigitalDocument digDoc = new DigitalDocument();
+            fileformat.setDigitalDocument(digDoc);
+            DocStruct logical = digDoc.createDocStruct(prefs.getDocStrctTypeByName("Monograph"));
+            DocStruct physical = digDoc.createDocStruct(prefs.getDocStrctTypeByName("BoundBook"));
+            digDoc.setLogicalDocStruct(logical);
+            digDoc.setPhysicalDocStruct(physical);
+
+            // metadata
+            if (StringUtils.isNotBlank(req.getTitel())) {
+                Metadata title = new Metadata(prefs.getMetadataTypeByName("TitleDocMain"));
+                title.setValue(req.getTitel());
+                logical.addMetadata(title);
+            }
+            Metadata identifierDigital = new Metadata(prefs.getMetadataTypeByName("CatalogIDDigital"));
+            identifierDigital.setValue(req.getBarcode());
+            logical.addMetadata(identifierDigital);
+          
+        } catch (UGHException e) {
+            cr.setResult("error");
+            cr.setErrorText("Error during metadata creation for " + req.getBarcode() + ": " + e.getMessage());
+            Response resp = Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(cr).build();
+            return resp;
+        }
+        Process process = cloneTemplate(template);
+        // set title
+        process.setTitel(processtitle);
+
+        try {
+            NeuenProzessAnlegen(process, template, fileformat, prefs);
+        } catch (Exception e) {
+            cr.setResult("error");
+            cr.setErrorText("Error during process creation for " + req.getBarcode() + ": " + e.getMessage());
+            Response resp = Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(cr).build();
+            return resp;
+        }
+        if (StringUtils.isNotBlank(req.getBarcode())) {
+            Processproperty idObject = new Processproperty();
+            idObject.setTitel("barcode");
+            idObject.setWert(req.getBarcode());
+            idObject.setProcessId(process.getId());
+            PropertyManager.saveProcessProperty(idObject);
+        }
+        if (StringUtils.isNotBlank(req.getUser())) {
+            Processproperty objectType = new Processproperty();
+            objectType.setTitel("user");
+            objectType.setWert(req.getUser());
+            objectType.setProcessId(process.getId());
+            PropertyManager.saveProcessProperty(objectType);
+        }
+        if (StringUtils.isNotBlank(req.getSignatur())) {
+            Processproperty idSource = new Processproperty();
+            idSource.setTitel("signatur");
+            idSource.setWert(req.getSignatur());
+            idSource.setProcessId(process.getId());
+            PropertyManager.saveProcessProperty(idSource);
+        }
+        if (StringUtils.isNotBlank(req.getTitel())) {
+            Processproperty labelObject = new Processproperty();
+            labelObject.setTitel("titel");
+            labelObject.setWert(req.getTitel());
+            labelObject.setProcessId(process.getId());
+            PropertyManager.saveProcessProperty(labelObject);
+        }
+        if (StringUtils.isNotBlank(req.getBestand())) {
+            Processproperty tagProcess = new Processproperty();
+            tagProcess.setTitel("bestand");
+            tagProcess.setWert(req.getBestand());
+            tagProcess.setProcessId(process.getId());
+            PropertyManager.saveProcessProperty(tagProcess);
+        }
+        if (StringUtils.isNotBlank(req.getArchiv())) {
+            Processproperty tagProject = new Processproperty();
+            tagProject.setTitel("archiv");
+            tagProject.setWert(req.getArchiv());
+            tagProject.setProcessId(process.getId());
+            PropertyManager.saveProcessProperty(tagProject);
+        }
+        if (StringUtils.isNotBlank(req.getKommentar())) {
+            Processproperty catkey = new Processproperty();
+            catkey.setTitel("kommentar");
+            catkey.setWert(req.getKommentar());
+            catkey.setProcessId(process.getId());
+            PropertyManager.saveProcessProperty(catkey);
         }
         if (StringUtils.isNotBlank(req.getGoobiWorkflow())) {
             Processproperty goobiWorkflow = new Processproperty();

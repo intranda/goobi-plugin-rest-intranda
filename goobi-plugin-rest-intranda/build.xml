@@ -3,7 +3,7 @@
     <!-- ================================= 
     	        properties             
     	     ================================= -->
-    <property name="filename" value="intranda-rest-api" />
+    <property name="filename" value="plugin_intranda_rest_default" />
     <property name="dir.build" value="bin" />
     <property name="dir.deploy" value="deploy" />
     <property name="pluginFolderWin" value="C:/Goobi/plugins/GUI/" />
@@ -63,7 +63,7 @@
     </target>
     <target name="linux" if="isUnix">
         <echo>Using Linux path: ${pluginFolderUnix}</echo>
-        <copy tofile="${pluginFolderUnix}/${filename}.jar" file="${dir.deploy}/${filename}.jar" overwrite="true" />
+	<copy tofile="${pluginFolderUnix}/${filename}.jar" file="${dir.deploy}/${filename}-${git.revision}.jar" overwrite="true" />
 
     </target>
     <target name="win32" if="isWindows">
@@ -75,6 +75,26 @@
              Compile the sources
     	     ================================= -->
 
+        <target name="compile-jenkins" if="${jenkins}">
+                <echo>Using jenkins compiler</echo>
+                <javac destdir="${dir.build}" includeantruntime="false"  target="7" encoding="UTF8" source="7" debug="true" debuglevel="lines,vars,source">
+                        <classpath refid="classpath" />
+                        <compilerarg value="-Xlint" />
+                        <src path="src" />
+                        <!--                    <src path="../Goobi/WEB-INF/src" /> -->
+<!--            <src path="../Goobi/src" />
+                        <src path="../Goobi/src-dubious" />                     -->
+                </javac>
+        </target>
+
+        <target name="compile-eclipse" unless="jenkins">
+                <echo>Using eclipse compiler</echo>
+                <javac destdir="${dir.build}" includeantruntime="false"  target="7" encoding="UTF8" source="7" debug="true" debuglevel="lines,vars,source">
+                        <classpath refid="classpath" />
+                        <compilerarg value="-Xlint" />
+                        <src path="src" />
+                </javac>
+        </target>
 
 
     <target name="compile">
@@ -91,6 +111,25 @@
     <!-- ================================= 
              Compile the jar
     	     ================================= -->
+        <target name="jar-jenkins" if="jenkins">
+                <jar destfile="${dir.deploy}/${filename}-${git.revision}.jar">
+                        <manifest>
+                                <attribute name="Main-Class" value="de.intranda.goobi.PluginInfo" />
+                                <attribute name="Class-Path" value="${libs.project}" />
+                        </manifest>
+                        <fileset dir="bin"/>
+                </jar>
+        </target>
+
+        <target name="jar-eclipse" unless="jenkins">
+                <jar destfile="${dir.deploy}/${filename}-${git.revision}.jar">
+                        <manifest>
+                                <attribute name="Main-Class" value="de.intranda.goobi.PluginInfo" />
+                                <attribute name="Class-Path" value="${libs.project}" />
+                        </manifest>
+                        <fileset dir="bin" />
+                </jar>
+        </target>
 
 
     <target name="jar">
@@ -126,9 +165,14 @@
     		 ================================= -->
 
     <target name="jar.runnable" depends="git.revision">
-        <echo>Compile sources ...</echo>
-        <antcall target="compile" />
-        <antcall target="jar-gui" />
+	    <echo>Compile sources ...</echo>
+                <antcall target="compile-jenkins" />
+                <antcall target="compile-eclipse" />
+
+                <echo>Generating jar file: ${dir.deploy}/${filename}-${git.revision}.jar</echo>
+                <antcall target="jar-jenkins" />
+                <antcall target="jar-eclipse" />
+	    
     </target>
 
     <!-- ================================= 
