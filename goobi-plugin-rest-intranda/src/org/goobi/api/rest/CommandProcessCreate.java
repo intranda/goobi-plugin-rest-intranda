@@ -442,6 +442,15 @@ public class CommandProcessCreate {
             goobiWorkflow.setProcessId(process.getId());
             PropertyManager.saveProcessProperty(goobiWorkflow);
         }
+        
+        if (StringUtils.isNotBlank(req.getDjangoWorkflow())) {
+            Processproperty djangoWorkflow = new Processproperty();
+            djangoWorkflow.setTitel("djangoWorkflow");
+            djangoWorkflow.setWert(req.getDjangoWorkflow());
+            djangoWorkflow.setProcessId(process.getId());
+            PropertyManager.saveProcessProperty(djangoWorkflow);
+        }
+        
         cr.setResult("success");
         cr.setProcessName(process.getTitel());
         cr.setProcessId(process.getId());

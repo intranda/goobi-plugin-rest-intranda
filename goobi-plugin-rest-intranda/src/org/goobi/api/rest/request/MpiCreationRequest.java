@@ -16,4 +16,5 @@ public class MpiCreationRequest {
     private String titel; // Titel
     private String kommentar; // Kommentar
     private String goobiWorkflow; // Goobi Workflow
+    private String djangoWorkflow; 
 }
