@@ -478,7 +478,7 @@ public class CommandProcessCreate {
 
     private Fileformat getOpacRequest(String opacIdentifier, Prefs prefs, String myCatalogue) throws Exception {
         // get logical data from opac
-        ConfigOpacCatalogue coc = new ConfigOpac().getCatalogueByName(myCatalogue);
+        ConfigOpacCatalogue coc = ConfigOpac.getInstance().getCatalogueByName(myCatalogue);
         IOpacPlugin myImportOpac = (IOpacPlugin) PluginLoader.getPluginByTitle(PluginType.Opac, coc.getOpacType());
         Fileformat ff = myImportOpac.search("12", opacIdentifier, coc, prefs);
         Metadata md = new Metadata(prefs.getMetadataTypeByName("singleDigCollection"));
