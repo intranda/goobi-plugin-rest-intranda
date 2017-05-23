@@ -23,6 +23,7 @@ import org.goobi.api.rest.request.StanfordCreationRequest;
 import org.goobi.api.rest.response.CreationResponse;
 import org.goobi.beans.Process;
 import org.goobi.beans.Processproperty;
+import org.goobi.beans.Project;
 import org.goobi.beans.Step;
 import org.goobi.managedbeans.LoginBean;
 import org.goobi.production.enums.PluginType;
@@ -37,6 +38,7 @@ import de.sub.goobi.helper.UghHelper;
 import de.sub.goobi.helper.enums.StepEditType;
 import de.sub.goobi.helper.enums.StepStatus;
 import de.sub.goobi.persistence.managers.ProcessManager;
+import de.sub.goobi.persistence.managers.ProjectManager;
 import de.sub.goobi.persistence.managers.PropertyManager;
 import de.sub.goobi.persistence.managers.StepManager;
 import de.unigoettingen.sub.search.opac.ConfigOpac;
@@ -218,6 +220,16 @@ public class CommandProcessCreate {
         // set title
         process.setTitel(processtitle);
 
+        if (StringUtils.isNotBlank(req.getProject())) {
+            List <Project> projects = ProjectManager.getAllProjects();
+            for (Project proj : projects) {
+				if (proj.getTitel().equals(req.getProject())){
+					process.setProjekt(proj);
+				}
+			}
+        }
+        
+        
         try {
             NeuenProzessAnlegen(process, template, fileformat, prefs);
         } catch (Exception e) {
