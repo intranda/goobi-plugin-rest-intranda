@@ -110,3 +110,15 @@ In the POST request the token has to be given as request header too.
 
 As post request:
 http://localhost:8080/Goobi/api/process/delete/id/1234?token=test
+
+
+#####################   Close step   #####################
+Close step:
+
+http://localhost:8080/Goobi/api/closestep/1234?token=test
+
+Close step and remove symlink:
+
+http://localhost:8080/Goobi/api/closestep/testadmin/2124143?token=test
+
+
