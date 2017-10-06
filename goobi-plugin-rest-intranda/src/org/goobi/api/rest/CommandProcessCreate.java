@@ -239,11 +239,23 @@ public class CommandProcessCreate {
             return resp;
         }
         if (StringUtils.isNotBlank(req.getObjectId())) {
-            Processproperty idObject = new Processproperty();
+        	Processproperty idObject = new Processproperty();
             idObject.setTitel("objectId");
             idObject.setWert(req.getObjectId());
             idObject.setProcessId(process.getId());
             PropertyManager.saveProcessProperty(idObject);
+            
+            Processproperty argoURL = new Processproperty();
+            argoURL.setTitel("Argo URL");
+            argoURL.setWert("https://argo.stanford.edu/view/" + req.getObjectId());
+            argoURL.setProcessId(process.getId());
+            PropertyManager.saveProcessProperty(argoURL);
+            
+            Processproperty PURL = new Processproperty();
+            PURL.setTitel("PURL");
+            PURL.setWert("https://purl.stanford.edu/" + req.getObjectId().replace("druid:", ""));
+            PURL.setProcessId(process.getId());
+            PropertyManager.saveProcessProperty(PURL);
         }
         if (StringUtils.isNotBlank(req.getObjectType())) {
             Processproperty objectType = new Processproperty();
