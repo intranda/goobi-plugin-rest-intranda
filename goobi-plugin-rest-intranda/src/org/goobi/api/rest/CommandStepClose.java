@@ -2,7 +2,7 @@ package org.goobi.api.rest;
 
 import java.io.File;
 
-import javax.ws.rs.GET;
+import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
@@ -33,16 +33,15 @@ public class CommandStepClose {
     @Context
     UriInfo uriInfo;
 
-    // TODO change to POST after itm was updated
     @Path("/{stepid}")
-    @GET
+    @POST
     @Produces(MediaType.TEXT_XML)
     public Response closeStep(@PathParam("stepid") int stepid) {
         return closeStepAndRemoveLink(null, stepid);
     }
 
     @Path("/{username}/{stepid}")
-    @GET
+    @POST
     @Produces(MediaType.TEXT_XML)
     public Response closeStepAndRemoveLink(@PathParam("username") String username, @PathParam("stepid") int stepid) {
         CloseStepResponse cr = new CloseStepResponse();
@@ -100,7 +99,6 @@ public class CommandStepClose {
             status = Response.Status.BAD_REQUEST;
             cr.setResult("error");
         }
-      
 
         if (status.equals(Response.Status.OK)) {
             HelperSchritte hs = new HelperSchritte();
