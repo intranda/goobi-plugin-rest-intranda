@@ -1,6 +1,7 @@
 package org.goobi.api.rest;
 
 import java.io.File;
+import java.util.List;
 
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
@@ -23,6 +24,7 @@ import de.sub.goobi.config.ConfigurationHelper;
 import de.sub.goobi.helper.HelperSchritte;
 import de.sub.goobi.helper.ShellScript;
 import de.sub.goobi.helper.enums.StepStatus;
+import de.sub.goobi.persistence.managers.ProcessManager;
 import de.sub.goobi.persistence.managers.StepManager;
 import lombok.extern.log4j.Log4j;
 
@@ -32,6 +34,30 @@ public class CommandStepClose {
 
     @Context
     UriInfo uriInfo;
+
+    @Path("/processtitles/{processtitle}/{stepname}")
+    @POST
+    @Produces(MediaType.TEXT_XML)
+    public Response closeStepByName(@PathParam("processtitle") String processTitle, @PathParam("stepname") String stepName) {
+        Process p = ProcessManager.getProcessByExactTitle(processTitle);
+        List<Step> allSteps = StepManager.getStepsForProcess(p.getId());
+        Step so = null;
+        for (Step step : allSteps) {
+            if (step.getTitel().equals(stepName)) {
+                so = step;
+                break;
+            }
+        }
+        if (so == null) {
+            CloseStepResponse cr = new CloseStepResponse();
+            cr.setResult("error");
+            String message = "Step not found";
+            cr.setComment(message);
+            Status status = Response.Status.NOT_FOUND;
+            return Response.status(status).entity(cr).build();
+        }
+        return closeStepAndRemoveLink(null, so.getId());
+    }
 
     @Path("/{stepid}")
     @POST
