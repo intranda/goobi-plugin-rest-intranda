@@ -18,6 +18,30 @@ import de.sub.goobi.persistence.managers.StepManager;
 @Path("/addtoprocesslog")
 public class CommandAddToProcessLog {
 
+    /**
+     * Adds message to process log of process identified by process title
+     * 
+     * @param processTitle
+     * @param type
+     * @param value
+     * @return
+     */
+    @POST
+    @Path("/processtitles/{processtitle}/{type}")
+    public Response addToLogByProcessTitle(@PathParam("processtitle") String processTitle, @PathParam("type") String type, String value) {
+        Process process = ProcessManager.getProcessByExactTitle(processTitle);
+        LogEntry logEntry = new LogEntry();
+        logEntry.setContent(value);
+        logEntry.setCreationDate(new Date());
+        logEntry.setProcessId(process.getId());
+        logEntry.setType(LogType.getByTitle(type));
+
+        logEntry.setUserName("webapi");
+
+        ProcessManager.saveLogEntry(logEntry);
+        return Response.ok().build();
+    }
+
     @POST
     @Path("/steps/{stepid}/{type}")
     public Response addToLogByStepId(@PathParam("stepid") Integer id, @PathParam("type") String type, String value) {
