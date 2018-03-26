@@ -35,6 +35,13 @@ public class CommandStepClose {
     @Context
     UriInfo uriInfo;
 
+    /**
+     * Closes step by process title and step name. Uses the first step with the step name in the process
+     * 
+     * @param processTitle
+     * @param stepName
+     * @return
+     */
     @Path("/processtitles/{processtitle}/{stepname}")
     @POST
     @Produces(MediaType.TEXT_XML)
