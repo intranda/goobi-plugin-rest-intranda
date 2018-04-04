@@ -1,4 +1,4 @@
-package org.goobi.api.rest;
+package org.goobi.api.rest.command;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
