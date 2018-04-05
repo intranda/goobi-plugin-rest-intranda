@@ -14,6 +14,7 @@ import javax.ws.rs.core.MediaType;
 import org.goobi.api.db.RestDbHelper;
 import org.goobi.api.rest.request.SearchGroup;
 import org.goobi.api.rest.request.SearchQuery;
+import org.goobi.api.rest.request.SearchQuery.RelationalOperator;
 import org.goobi.api.rest.request.SearchRequest;
 import org.goobi.api.rest.response.CreationResponse;
 import org.goobi.api.rest.response.RestProcess;
@@ -39,14 +40,14 @@ public class Processes {
     @Produces(MediaType.APPLICATION_JSON)
     public List<RestProcess> simpleSearch(@QueryParam("field") String field, @QueryParam("value") String value, @QueryParam("limit") int limit,
             @QueryParam("offset") int offset) throws SQLException {
-    	SearchQuery query = new SearchQuery(field, value);
-    	SearchGroup group = new SearchGroup();
-    	group.addFilter(query);
-    	SearchRequest req = new SearchRequest();
-    	req.addSearchGroup(group);
-    	req.setLimit(limit);
-    	req.setOffset(offset);
-    	
+        SearchQuery query = new SearchQuery(field, value, RelationalOperator.EQUAL);
+        SearchGroup group = new SearchGroup();
+        group.addFilter(query);
+        SearchRequest req = new SearchRequest();
+        req.addSearchGroup(group);
+        req.setLimit(limit);
+        req.setOffset(offset);
+
         return RestDbHelper.searchProcesses(req);
     }
 }
