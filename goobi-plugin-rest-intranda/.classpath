@@ -20,5 +20,6 @@
 	<classpathentry kind="lib" path="/Goobi/webapp/WEB-INF/lib/jackson-core-2.6.6.jar"/>
 	<classpathentry kind="lib" path="/Goobi/webapp/WEB-INF/lib/jackson-databind-2.6.6.jar"/>
 	<classpathentry kind="lib" path="/Goobi/webapp/WEB-INF/lib/jackson-dataformat-cbor-2.6.6.jar"/>
+	<classpathentry kind="lib" path="/Goobi/webapp/WEB-INF/lib/commons-dbutils-1.6-SNAPSHOT.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
