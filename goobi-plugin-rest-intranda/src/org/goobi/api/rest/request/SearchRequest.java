@@ -55,9 +55,9 @@ public class SearchRequest {
                 b.append(conj);
             }
         }
-        b.append(") ");
+        b.append(") ORDER BY processid ASC ");
         if (limit != 0) {
-            b.append("ORDER BY processid ASC LIMIT ? OFFSET ? ");
+            b.append("LIMIT ? OFFSET ? ");
         }
         b.append(") as t) ");
     }
