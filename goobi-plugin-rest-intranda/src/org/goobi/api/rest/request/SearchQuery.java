@@ -12,7 +12,7 @@ public class SearchQuery {
     private String value;
     private RelationalOperator relation;
 
-    public void createSqlClause(StringBuilder b) {
+    public void createLegacySqlClause(StringBuilder b) {
         b.append('(');
         b.append("name=? and value");
         b.append(relation.toString());
@@ -22,11 +22,9 @@ public class SearchQuery {
 
     public enum RelationalOperator {
         EQUAL("="),
-        LESS("<"),
-        GT(">"),
-        LESSEQ("<="),
-        GTEQ(">="),
-        NEQUAL("!=");
+        NEQUAL("!="),
+        LIKE(" LIKE "),
+        NLIKE(" NOT LIKE ");
 
         private final String sqlStr;
 
@@ -41,8 +39,38 @@ public class SearchQuery {
 
     }
 
-    public void addParams(List<Object> params) {
+    public void addLegacyParams(List<Object> params) {
         params.add(field);
         params.add(value);
-    };
+    }
+
+    public void createSqlClause(StringBuilder b) {
+        b.append('(');
+        switch (relation) {
+            case EQUAL:
+                b.append("JSON_CONTAINS(value, ?, ?)");
+                break;
+            case NEQUAL:
+                b.append("NOT JSON_CONTAINS(value, ?, ?)");
+                break;
+            case LIKE:
+                b.append("JSON_EXTRACT(value, ?) LIKE ?");
+                break;
+            case NLIKE:
+                b.append("JSON_EXTRACT(value, ?) NOT LIKE ?");
+                break;
+        }
+        b.append(')');
+    }
+
+    public void addParams(List<Object> params) {
+        if (relation == RelationalOperator.EQUAL || relation == RelationalOperator.NEQUAL) {
+            params.add("'\"" + value + "\"'");
+            params.add("$." + field);
+        } else {
+            params.add("$." + field);
+            params.add(value);
+        }
+
+    }
 }

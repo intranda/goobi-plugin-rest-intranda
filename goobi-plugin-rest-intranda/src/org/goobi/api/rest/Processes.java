@@ -39,14 +39,17 @@ public class Processes {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public List<RestProcess> simpleSearch(@QueryParam("field") String field, @QueryParam("value") String value, @QueryParam("limit") int limit,
-            @QueryParam("offset") int offset) throws SQLException {
-        SearchQuery query = new SearchQuery(field, value, RelationalOperator.EQUAL);
+            @QueryParam("offset") int offset, @QueryParam("orderby") String sortField, @QueryParam("descending") boolean sortDescending)
+            throws SQLException {
+        SearchQuery query = new SearchQuery(field, value, RelationalOperator.LIKE);
         SearchGroup group = new SearchGroup();
         group.addFilter(query);
         SearchRequest req = new SearchRequest();
         req.addSearchGroup(group);
         req.setLimit(limit);
         req.setOffset(offset);
+        req.setSortField(sortField);
+        req.setSortDescending(sortDescending);
 
         return RestDbHelper.searchProcesses(req);
     }

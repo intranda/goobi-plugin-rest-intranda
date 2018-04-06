@@ -18,6 +18,27 @@ public class SearchGroup {
         this.filters.add(query);
     }
 
+    public void createLegacySqlClause(StringBuilder b) {
+        String conj = conjunctive ? "AND " : "OR ";
+        b.append('(');
+        for (int i = 0; i < filters.size(); i++) {
+            SearchQuery filter = filters.get(i);
+            filter.createLegacySqlClause(b);
+            if (i + 1 < filters.size()) {
+                b.append(conj);
+            }
+        }
+        b.append(")");
+
+    }
+
+    public void addLegacyParams(List<Object> params) {
+        for (SearchQuery filter : filters) {
+            filter.addLegacyParams(params);
+        }
+
+    }
+
     public void createSqlClause(StringBuilder b) {
         String conj = conjunctive ? "AND " : "OR ";
         b.append('(');
@@ -29,13 +50,11 @@ public class SearchGroup {
             }
         }
         b.append(")");
-
     }
 
     public void addParams(List<Object> params) {
         for (SearchQuery filter : filters) {
             filter.addParams(params);
         }
-
     }
 }
