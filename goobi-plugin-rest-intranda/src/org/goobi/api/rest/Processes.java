@@ -36,7 +36,6 @@ public class Processes {
 
     @GET
     @Path("/search")
-    @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public List<RestProcess> simpleSearch(@QueryParam("field") String field, @QueryParam("value") String value, @QueryParam("limit") int limit,
             @QueryParam("offset") int offset, @QueryParam("orderby") String sortField, @QueryParam("descending") boolean sortDescending)
@@ -53,4 +52,13 @@ public class Processes {
 
         return RestDbHelper.searchProcesses(req);
     }
+
+    @POST
+    @Path("/search")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public List<RestProcess> advancedSearch(SearchRequest sr) throws SQLException {
+        return RestDbHelper.searchProcesses(sr);
+    }
+
 }
