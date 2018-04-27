@@ -14,18 +14,16 @@ import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 
 public class JsonResultSetToRestProcessList implements ResultSetHandler<List<RestProcess>> {
-    private static final Gson gson = new Gson();
-    private static final Type myMapType = new TypeToken<Map<String, List<String>>>() {
-    }.getType();
 
     @Override
     public List<RestProcess> handle(ResultSet rs) throws SQLException {
         List<RestProcess> resultList = new ArrayList<RestProcess>();
         while (rs.next()) {
             Integer id = rs.getInt("processid");
-            String name = rs.getString("Titel");
-            Map<String, List<String>> metadata = gson.fromJson(rs.getString("value"), myMapType);
-            resultList.add(new RestProcess(id, name, metadata));
+            String ruleset = rs.getString("Datei");
+            RestProcess p = new RestProcess(id);
+            p.setRuleset(ruleset);
+            resultList.add(p);
         }
         return resultList;
     }

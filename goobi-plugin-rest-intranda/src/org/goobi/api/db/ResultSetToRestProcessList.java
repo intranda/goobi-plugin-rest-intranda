@@ -12,10 +12,8 @@ import org.goobi.api.rest.request.SearchRequest;
 import org.goobi.api.rest.response.RestProcess;
 
 public class ResultSetToRestProcessList implements ResultSetHandler<List<RestProcess>> {
-    private SearchRequest req;
 
-    public ResultSetToRestProcessList(SearchRequest req) {
-        this.req = req;
+    public ResultSetToRestProcessList() {
     }
 
     @Override
@@ -23,15 +21,11 @@ public class ResultSetToRestProcessList implements ResultSetHandler<List<RestPro
         Map<Integer, RestProcess> resultMap = new LinkedHashMap<>();
         while (rs.next()) {
             Integer id = rs.getInt("processid");
-            RestProcess p = resultMap.get(id);
-            if (p == null) {
-                p = new RestProcess(id);
-                p.setName(rs.getString("Titel"));
-                resultMap.put(id, p);
-            }
-            String name = rs.getString("name");
-            if (req.getWantedFields() == null || req.getWantedFields().contains(name)) {
-                p.addMetadata(name, rs.getString("value"));
+            if(!resultMap.containsKey(id)) {
+            	String ruleset = rs.getString("Datei");
+                RestProcess p = new RestProcess(id);
+                p.setRuleset(ruleset);
+	            resultMap.put(id, p);
             }
         }
         return new ArrayList<RestProcess>(resultMap.values());

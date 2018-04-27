@@ -39,11 +39,11 @@ public class SearchRequest {
     }
 
     private void createySelect(StringBuilder b) {
-        b.append("SELECT * ");
+        b.append("SELECT prozesse.ProzesseID,  metadatenkonfigurationen.Datei ");
     }
 
     private void createFrom(StringBuilder b) {
-        b.append("FROM metadata_json LEFT JOIN prozesse ON metadata_json.processid = prozesse.ProzesseID ");
+        b.append("FROM metadata_json LEFT JOIN prozesse ON metadata_json.processid = prozesse.ProzesseID LEFT JOIN metadatenkonfigurationen on metadatenkonfigurationen.MetadatenKonfigurationID=prozesse.MetadatenKonfigurationID ");
     }
 
     private void createWhere(StringBuilder b) {
@@ -106,11 +106,11 @@ public class SearchRequest {
     }
 
     private void createLegacySelect(StringBuilder b) {
-        b.append("SELECT * ");
+        b.append("SELECT prozesse.ProzesseID,  metadatenkonfigurationen.Datei ");
     }
 
     private void createLegacyFrom(StringBuilder b) {
-        b.append("FROM metadata LEFT JOIN prozesse ON metadata.processid = prozesse.ProzesseID ");
+        b.append("FROM metadata LEFT JOIN prozesse ON metadata.processid = prozesse.ProzesseID LEFT JOIN metadatenkonfigurationen on metadatenkonfigurationen.MetadatenKonfigurationID=prozesse.MetadatenKonfigurationID ");
     }
 
     private void createLegacyWhere(StringBuilder b) {

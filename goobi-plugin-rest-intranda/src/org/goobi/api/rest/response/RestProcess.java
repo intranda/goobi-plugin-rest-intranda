@@ -9,19 +9,19 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 
 @Data
-@AllArgsConstructor
 public class RestProcess {
     private int id;
     private String name;
-    private Map<String, List<String>> metadata;
+    private String ruleset; 
+    private Map<String, List<RestMetadata>> metadata;
 
     public RestProcess(int id) {
         this.id = id;
         this.metadata = new TreeMap<>();
     }
 
-    public void addMetadata(String name, String value) {
-        List<String> values = this.metadata.get(name);
+    public void addMetadata(String name, RestMetadata value) {
+        List<RestMetadata> values = this.metadata.get(name);
         if (values == null) {
             values = new ArrayList<>();
             this.metadata.put(name, values);

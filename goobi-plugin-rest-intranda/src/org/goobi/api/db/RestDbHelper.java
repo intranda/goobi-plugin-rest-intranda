@@ -8,6 +8,8 @@ import org.apache.commons.dbutils.QueryRunner;
 import org.goobi.api.rest.request.SearchRequest;
 import org.goobi.api.rest.response.RestProcess;
 
+import com.sun.org.apache.bcel.internal.generic.NEW;
+
 import de.sub.goobi.persistence.managers.MySQLHelper;
 
 public class RestDbHelper {
@@ -26,7 +28,7 @@ public class RestDbHelper {
             Object[] params = req.createLegacySqlParams();
             try (Connection conn = MySQLHelper.getInstance().getConnection()) {
                 QueryRunner run = new QueryRunner();
-                results = run.query(conn, sql, new ResultSetToRestProcessList(req), params);
+                results = run.query(conn, sql, new ResultSetToRestProcessList(), params);
             }
         }
         return results;

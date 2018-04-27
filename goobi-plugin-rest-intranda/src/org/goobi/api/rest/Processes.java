@@ -18,6 +18,7 @@ import org.goobi.api.rest.request.SearchQuery.RelationalOperator;
 import org.goobi.api.rest.request.SearchRequest;
 import org.goobi.api.rest.response.CreationResponse;
 import org.goobi.api.rest.response.RestProcess;
+import org.goobi.api.rest.utils.MetadataUtils;
 
 @Path("/processes")
 public class Processes {
@@ -50,7 +51,9 @@ public class Processes {
         req.setSortField(sortField);
         req.setSortDescending(sortDescending);
 
-        return RestDbHelper.searchProcesses(req);
+        List<RestProcess> processes = RestDbHelper.searchProcesses(req);
+        MetadataUtils.addMetadataToRestProcesses(processes, req);
+        return processes;
     }
 
     @POST
@@ -58,7 +61,9 @@ public class Processes {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public List<RestProcess> advancedSearch(SearchRequest sr) throws SQLException {
-        return RestDbHelper.searchProcesses(sr);
+    	List<RestProcess> result = RestDbHelper.searchProcesses(sr);
+        MetadataUtils.addMetadataToRestProcesses(result, sr);
+        return result;
     }
 
 }

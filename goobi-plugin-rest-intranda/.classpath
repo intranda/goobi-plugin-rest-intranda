@@ -22,5 +22,7 @@
 	<classpathentry kind="lib" path="/Goobi/webapp/WEB-INF/lib/jackson-dataformat-cbor-2.6.6.jar"/>
 	<classpathentry kind="lib" path="/Goobi/webapp/WEB-INF/lib/commons-dbutils-1.6-SNAPSHOT.jar"/>
 	<classpathentry kind="lib" path="/Goobi/webapp/WEB-INF/lib/gson-2.2.4.jar"/>
+	<classpathentry kind="lib" path="/Goobi/webapp/WEB-INF/lib/jdom-2.0.5.jar"/>
+	<classpathentry kind="lib" path="/Goobi/webapp/WEB-INF/lib/xalan-2.6.0.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
