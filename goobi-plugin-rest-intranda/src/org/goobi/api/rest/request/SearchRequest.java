@@ -23,6 +23,12 @@ public class SearchRequest {
     private int limit;
     private int offset;
 
+    public void newGroup() {
+        SearchGroup group = new SearchGroup();
+        group.newFilter();
+        this.metadataFilters.add(group);
+    }
+
     public void addSearchGroup(SearchGroup group) {
         this.metadataFilters.add(group);
     }
@@ -43,7 +49,8 @@ public class SearchRequest {
     }
 
     private void createFrom(StringBuilder b) {
-        b.append("FROM metadata_json LEFT JOIN prozesse ON metadata_json.processid = prozesse.ProzesseID LEFT JOIN metadatenkonfigurationen on metadatenkonfigurationen.MetadatenKonfigurationID=prozesse.MetadatenKonfigurationID ");
+        b.append(
+                "FROM metadata_json LEFT JOIN prozesse ON metadata_json.processid = prozesse.ProzesseID LEFT JOIN metadatenkonfigurationen on metadatenkonfigurationen.MetadatenKonfigurationID=prozesse.MetadatenKonfigurationID ");
     }
 
     private void createWhere(StringBuilder b) {
@@ -110,7 +117,8 @@ public class SearchRequest {
     }
 
     private void createLegacyFrom(StringBuilder b) {
-        b.append("FROM metadata LEFT JOIN prozesse ON metadata.processid = prozesse.ProzesseID LEFT JOIN metadatenkonfigurationen on metadatenkonfigurationen.MetadatenKonfigurationID=prozesse.MetadatenKonfigurationID ");
+        b.append(
+                "FROM metadata LEFT JOIN prozesse ON metadata.processid = prozesse.ProzesseID LEFT JOIN metadatenkonfigurationen on metadatenkonfigurationen.MetadatenKonfigurationID=prozesse.MetadatenKonfigurationID ");
     }
 
     private void createLegacyWhere(StringBuilder b) {

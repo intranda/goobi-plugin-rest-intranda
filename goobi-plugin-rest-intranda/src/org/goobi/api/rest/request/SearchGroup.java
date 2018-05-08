@@ -3,6 +3,8 @@ package org.goobi.api.rest.request;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.goobi.api.rest.request.SearchQuery.RelationalOperator;
+
 import lombok.Data;
 
 @Data
@@ -12,6 +14,10 @@ public class SearchGroup {
 
     public SearchGroup() {
         this.filters = new ArrayList<>();
+    }
+
+    public void newFilter() {
+        this.filters.add(new SearchQuery("", "", RelationalOperator.EQUAL));
     }
 
     public void addFilter(SearchQuery query) {
