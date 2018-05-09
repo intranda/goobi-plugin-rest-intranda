@@ -334,6 +334,16 @@ public class CommandProcessCreate {
             goobiWorkflow.setProcessId(process.getId());
             PropertyManager.saveProcessProperty(goobiWorkflow);
         }
+        Processproperty ocr = new Processproperty();
+        ocr.setTitel("OCR");
+        if (StringUtils.isNotBlank(req.getOcr())) {
+        	ocr.setWert(req.getOcr());
+        } else {
+        	ocr.setWert("false");
+        }
+        ocr.setProcessId(process.getId());
+        PropertyManager.saveProcessProperty(ocr);
+        
         cr.setResult("success");
         cr.setProcessName(process.getTitel());
         cr.setProcessId(process.getId());

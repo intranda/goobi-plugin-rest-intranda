@@ -13,7 +13,8 @@ public class StanfordCreationRequest {
     private String sourceID; // source:76543
     private String title; // book title
     private String contentType; // image
-    private String  project; // goobi project??
+    private String  project; // goobi project
+    private String  ocr; // ocr true or false
     private String catkey; // 31232818
     private String barcode; // 1029287645
     private String  collectionId; // druid:xx123yy4567
