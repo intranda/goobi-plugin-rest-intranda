@@ -11,14 +11,12 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 
-import org.goobi.api.db.RestDbHelper;
 import org.goobi.api.rest.request.SearchGroup;
 import org.goobi.api.rest.request.SearchQuery;
 import org.goobi.api.rest.request.SearchQuery.RelationalOperator;
 import org.goobi.api.rest.request.SearchRequest;
 import org.goobi.api.rest.response.CreationResponse;
 import org.goobi.api.rest.response.RestProcess;
-import org.goobi.api.rest.utils.MetadataUtils;
 
 @Path("/processes")
 public class Processes {
@@ -51,9 +49,7 @@ public class Processes {
         req.setSortField(sortField);
         req.setSortDescending(sortDescending);
 
-        List<RestProcess> processes = RestDbHelper.searchProcesses(req);
-        MetadataUtils.addMetadataToRestProcesses(processes, req);
-        return processes;
+        return req.search();
     }
 
     @POST
@@ -61,9 +57,7 @@ public class Processes {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public List<RestProcess> advancedSearch(SearchRequest sr) throws SQLException {
-    	List<RestProcess> result = RestDbHelper.searchProcesses(sr);
-        MetadataUtils.addMetadataToRestProcesses(result, sr);
-        return result;
+        return sr.search();
     }
 
 }

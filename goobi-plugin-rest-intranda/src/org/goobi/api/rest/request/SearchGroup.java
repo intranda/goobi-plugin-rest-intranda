@@ -24,6 +24,14 @@ public class SearchGroup {
         this.filters.add(query);
     }
 
+    public void deleteFilter(int index) {
+        this.filters.remove(index);
+    }
+
+    public int getNumFilters() {
+        return this.filters.size();
+    }
+
     public void createLegacySqlClause(StringBuilder b) {
         String conj = conjunctive ? "AND " : "OR ";
         b.append('(');

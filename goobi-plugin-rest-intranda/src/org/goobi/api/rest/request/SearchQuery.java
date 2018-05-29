@@ -39,6 +39,10 @@ public class SearchQuery {
 
     }
 
+    public RelationalOperator[] getOperators() {
+        return RelationalOperator.values();
+    }
+
     public void addLegacyParams(List<Object> params) {
         params.add(field);
         params.add(value);
@@ -65,11 +69,11 @@ public class SearchQuery {
 
     public void addParams(List<Object> params) {
         if (relation == RelationalOperator.EQUAL || relation == RelationalOperator.NEQUAL) {
-            params.add("'\"" + value + "\"'");
+            params.add("\"" + value + "\"");
             params.add("$." + field);
         } else {
             params.add("$." + field);
-            params.add(value);
+            params.add("%" + value + "%");
         }
 
     }

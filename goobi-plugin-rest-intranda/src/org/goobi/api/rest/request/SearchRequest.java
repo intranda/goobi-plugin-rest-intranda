@@ -1,8 +1,13 @@
 package org.goobi.api.rest.request;
 
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+
+import org.goobi.api.db.RestDbHelper;
+import org.goobi.api.rest.response.RestProcess;
+import org.goobi.api.rest.utils.MetadataUtils;
 
 import lombok.Data;
 
@@ -10,8 +15,7 @@ import lombok.Data;
 public class SearchRequest {
     private List<SearchGroup> metadataFilters = new ArrayList<>();
     private boolean metadataConjunctive;
-    private String filterProject;
-    private String filterObjectType;
+    private List<String> filterProjects;
     private String filterStep;
     private String structureType;
 
@@ -33,6 +37,20 @@ public class SearchRequest {
         this.metadataFilters.add(group);
     }
 
+    public void deleteSearchGroup(int index) {
+        this.metadataFilters.remove(index);
+    }
+
+    public int getNumGroups() {
+        return this.metadataFilters.size();
+    }
+
+    public List<RestProcess> search() throws SQLException {
+        List<RestProcess> processes = RestDbHelper.searchProcesses(this);
+        MetadataUtils.addMetadataToRestProcesses(processes, this);
+        return processes;
+    }
+
     public String createSql() {
         //example sql: select * from metadata left join prozesse on metadata.processid = prozesse.ProzesseID where prozesse.ProzesseID IN 
         //(select processid from metadata where metadata.name="_dateDigitization" and metadata.value="2018");
@@ -46,16 +64,32 @@ public class SearchRequest {
 
     private void createySelect(StringBuilder b) {
         b.append("SELECT prozesse.ProzesseID,  metadatenkonfigurationen.Datei ");
+        if (this.filterProjects != null && !this.filterProjects.isEmpty()) {
+            b.append(", projekte.Titel ");
+        }
     }
 
     private void createFrom(StringBuilder b) {
         b.append(
                 "FROM metadata_json LEFT JOIN prozesse ON metadata_json.processid = prozesse.ProzesseID LEFT JOIN metadatenkonfigurationen on metadatenkonfigurationen.MetadatenKonfigurationID=prozesse.MetadatenKonfigurationID ");
+        if (this.filterProjects != null && !this.filterProjects.isEmpty()) {
+            b.append("LEFT JOIN projekte ON prozesse.ProjekteID = projekte.ProjekteID ");
+        }
     }
 
     private void createWhere(StringBuilder b) {
         String conj = metadataConjunctive ? "AND " : "OR ";
         b.append("WHERE ");
+        if (this.filterProjects != null && !this.filterProjects.isEmpty()) {
+            b.append("projekte.Titel IN (");
+            for (int i = 0; i < this.filterProjects.size(); i++) {
+                b.append("?");
+                if (i + 1 < this.filterProjects.size()) {
+                    b.append(", ");
+                }
+            }
+            b.append(") AND ");
+        }
         for (int i = 0; i < metadataFilters.size(); i++) {
             SearchGroup sg = metadataFilters.get(i);
             sg.createSqlClause(b);
@@ -67,10 +101,10 @@ public class SearchRequest {
 
     private void createOrderAndLimit(StringBuilder b) {
         if (sortField != null && !sortField.isEmpty()) {
-            b.append("ORDER BY JSON_EXTRACT(value, ?) ");
+            b.append(" ORDER BY JSON_EXTRACT(value, ?) ");
             b.append(sortDescending ? "DESC " : "ASC ");
         } else {
-            b.append("ORDER BY processid ASC ");
+            b.append(" ORDER BY metadata_json.processid ASC ");
         }
         if (limit != 0) {
             b.append("LIMIT ? OFFSET ?");
@@ -87,6 +121,9 @@ public class SearchRequest {
     }
 
     private void addWhereParams(List<Object> params) {
+        for (String project : this.filterProjects) {
+            params.add(project);
+        }
         for (SearchGroup sg : metadataFilters) {
             sg.addParams(params);
         }
@@ -147,6 +184,9 @@ public class SearchRequest {
     }
 
     private void addLegacyWhereParams(List<Object> params) {
+        for (String project : this.filterProjects) {
+            params.add(project);
+        }
         for (SearchGroup sg : metadataFilters) {
             sg.addLegacyParams(params);
         }
