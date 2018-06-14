@@ -121,8 +121,10 @@ public class SearchRequest {
     }
 
     private void addWhereParams(List<Object> params) {
-        for (String project : this.filterProjects) {
-            params.add(project);
+        if (this.filterProjects != null) {
+            for (String project : this.filterProjects) {
+                params.add(project);
+            }
         }
         for (SearchGroup sg : metadataFilters) {
             sg.addParams(params);

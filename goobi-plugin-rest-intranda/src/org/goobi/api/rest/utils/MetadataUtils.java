@@ -95,11 +95,12 @@ public class MetadataUtils {
         for (Element el : authorityMetaXpath.evaluate(doc)) {
             RestMetadata meta = new RestMetadata();
             String name = el.getAttributeValue("name");
+
             if (!req.getWantedFields().contains(name)) {
                 continue;
             }
             String type = el.getAttributeValue("type");
-            if (type != null && "person".equals("type")) {
+            if ("person".equals(type)) {
                 meta.setValue(el.getChildText("displayName", goobiNamespace));
             } else {
                 meta.setValue(el.getText());
