@@ -8,8 +8,8 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.dbutils.ResultSetHandler;
+import org.goobi.api.rest.model.RestProcess;
 import org.goobi.api.rest.request.SearchRequest;
-import org.goobi.api.rest.response.RestProcess;
 
 public class ResultSetToRestProcessList implements ResultSetHandler<List<RestProcess>> {
 

@@ -9,9 +9,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.goobi.api.rest.model.RestMetadata;
+import org.goobi.api.rest.model.RestProcess;
 import org.goobi.api.rest.request.SearchRequest;
-import org.goobi.api.rest.response.RestMetadata;
-import org.goobi.api.rest.response.RestProcess;
 import org.jdom2.Document;
 import org.jdom2.Element;
 import org.jdom2.JDOMException;

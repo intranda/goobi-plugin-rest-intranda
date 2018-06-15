@@ -5,8 +5,8 @@ import java.sql.SQLException;
 import java.util.List;
 
 import org.apache.commons.dbutils.QueryRunner;
+import org.goobi.api.rest.model.RestProcess;
 import org.goobi.api.rest.request.SearchRequest;
-import org.goobi.api.rest.response.RestProcess;
 
 import com.sun.org.apache.bcel.internal.generic.NEW;
 

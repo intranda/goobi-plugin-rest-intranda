@@ -6,7 +6,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.commons.dbutils.ResultSetHandler;
-import org.goobi.api.rest.response.RestProcess;
+import org.goobi.api.rest.model.RestProcess;
 
 public class JsonResultSetToRestProcessList implements ResultSetHandler<List<RestProcess>> {
 

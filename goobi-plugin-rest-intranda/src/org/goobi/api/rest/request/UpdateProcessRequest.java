@@ -4,31 +4,10 @@ import lombok.Data;
 
 @Data
 public class UpdateProcessRequest {
-    private Action action;
-    private long otherProcessId;
-
-    public enum Action {
-        LINKWITHOTHER("=");
-
-        private final String sqlStr;
-
-        private Action(String value) {
-            this.sqlStr = value;
-        }
-
-        @Override
-        public String toString() {
-            return sqlStr;
-        }
-    }
-
-    public void apply(Process p) {
-        switch (this.action) {
-            case LINKWITHOTHER:
-                break;
-            default:
-                break;
-
-        }
-    }
+	private Integer id;
+	private String titel;
+	private String ausgabename;
+	private Integer projectId;
+	private Integer rulesetId;
+	private Integer batchID;
 }

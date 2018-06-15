@@ -1,4 +1,4 @@
-package org.goobi.api.rest.response;
+package org.goobi.api.rest.model;
 
 import java.util.Map;
 
@@ -11,4 +11,8 @@ public class RestMetadata {
 	private String authorityID;
 	private String authorityValue;
 	private String authorityURI;
+
+	public boolean anyValue() {
+		return value != null || authorityID != null || authorityURI != null || authorityValue != null;
+	}
 }

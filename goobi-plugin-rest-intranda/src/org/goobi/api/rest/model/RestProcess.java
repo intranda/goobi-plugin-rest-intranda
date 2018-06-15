@@ -1,4 +1,4 @@
-package org.goobi.api.rest.response;
+package org.goobi.api.rest.model;
 
 import java.util.ArrayList;
 import java.util.List;

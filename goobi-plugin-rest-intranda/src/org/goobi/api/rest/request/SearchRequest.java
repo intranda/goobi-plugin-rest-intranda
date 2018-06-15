@@ -6,7 +6,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.goobi.api.db.RestDbHelper;
-import org.goobi.api.rest.response.RestProcess;
+import org.goobi.api.rest.model.RestProcess;
 import org.goobi.api.rest.utils.MetadataUtils;
 
 import lombok.Data;
