@@ -24,64 +24,68 @@ import ugh.exceptions.WriteException;
 
 @Data
 public class UpdateProcessMetadataReq {
-	private List<String> deleteMetadata;
-	private Map<String, List<RestMetadata>> addMetadata;
+    private List<String> deleteMetadata;
+    private Map<String, List<RestMetadata>> addMetadata;
 
-	public UpdateMetadataResponse apply(Process p) throws IOException, InterruptedException, SwapException,
-			DAOException, ReadException, PreferencesException, WriteException {
-		UpdateMetadataResponse resp = new UpdateMetadataResponse();
+    public UpdateMetadataResponse apply(Process p) throws IOException, InterruptedException, SwapException,
+            DAOException, ReadException, PreferencesException, WriteException {
+        UpdateMetadataResponse resp = new UpdateMetadataResponse();
 
-		Prefs prefs = p.getRegelsatz().getPreferences();
-		Fileformat ff = p.readMetadataFile();
-		DigitalDocument dd = ff.getDigitalDocument();
+        Prefs prefs = p.getRegelsatz().getPreferences();
+        Fileformat ff = p.readMetadataFile();
+        DigitalDocument dd = ff.getDigitalDocument();
 
-		deleteMetadata(prefs, dd, resp);
-		addMetadata(prefs, dd, resp);
-		p.writeMetadataFile(ff);
+        deleteMetadata(prefs, dd, resp);
+        addMetadata(prefs, dd, resp);
+        p.writeMetadataFile(ff);
 
-		return resp;
-	}
+        return resp;
+    }
 
-	private void deleteMetadata(Prefs prefs, DigitalDocument dd, UpdateMetadataResponse resp) {
-		for (String dm : deleteMetadata) {
-			MetadataType mt = prefs.getMetadataTypeByName(dm);
-			List<Metadata> allMeta = new ArrayList<>(dd.getLogicalDocStruct().getAllMetadataByType(mt));
-			for (Metadata inMeta : allMeta) {
-				if (!dd.getLogicalDocStruct().removeMetadata(inMeta)) {
-					resp.setError(true);
-					resp.addErrorMessage("Can not delete " + dm);
-				}
-			}
-		}
-	}
+    private void deleteMetadata(Prefs prefs, DigitalDocument dd, UpdateMetadataResponse resp) {
+        if (deleteMetadata != null) {
+            for (String dm : deleteMetadata) {
+                MetadataType mt = prefs.getMetadataTypeByName(dm);
+                List<Metadata> allMeta = new ArrayList<>(dd.getLogicalDocStruct().getAllMetadataByType(mt));
+                for (Metadata inMeta : allMeta) {
+                    if (!dd.getLogicalDocStruct().removeMetadata(inMeta)) {
+                        resp.setError(true);
+                        resp.addErrorMessage("Can not delete " + dm);
+                    }
+                }
+            }
+        }
+    }
 
-	private void addMetadata(Prefs prefs, DigitalDocument dd, UpdateMetadataResponse resp) throws IOException,
-			InterruptedException, SwapException, DAOException, WriteException, PreferencesException {
-		for (String name : addMetadata.keySet()) {
-			try {
-				for (RestMetadata rmd : addMetadata.get(name)) {
-					if (!rmd.anyValue()) {
-						continue;
-					}
-					Metadata md = new Metadata(prefs.getMetadataTypeByName(name));
-					if (rmd.getValue() != null) {
-						md.setValue(rmd.getValue());
-					}
-					if (rmd.getAuthorityID() != null) {
-						md.setAuthorityID(rmd.getAuthorityID());
-					}
-					if (rmd.getAuthorityURI() != null) {
-						md.setAuthorityURI(rmd.getAuthorityURI());
-					}
-					if (rmd.getAuthorityValue() != null) {
-						md.setAuthorityValue(rmd.getAuthorityValue());
-					}
-					dd.getLogicalDocStruct().addMetadata(md);
-				}
-			} catch (MetadataTypeNotAllowedException e) {
-				resp.setError(true);
-				resp.addErrorMessage("Metadata not allowed: " + name);
-			}
-		}
-	}
+    private void addMetadata(Prefs prefs, DigitalDocument dd, UpdateMetadataResponse resp) throws IOException,
+            InterruptedException, SwapException, DAOException, WriteException, PreferencesException {
+        if (addMetadata != null) {
+            for (String name : addMetadata.keySet()) {
+                try {
+                    for (RestMetadata rmd : addMetadata.get(name)) {
+                        if (!rmd.anyValue()) {
+                            continue;
+                        }
+                        Metadata md = new Metadata(prefs.getMetadataTypeByName(name));
+                        if (rmd.getValue() != null) {
+                            md.setValue(rmd.getValue());
+                        }
+                        if (rmd.getAuthorityID() != null) {
+                            md.setAuthorityID(rmd.getAuthorityID());
+                        }
+                        if (rmd.getAuthorityURI() != null) {
+                            md.setAuthorityURI(rmd.getAuthorityURI());
+                        }
+                        if (rmd.getAuthorityValue() != null) {
+                            md.setAuthorityValue(rmd.getAuthorityValue());
+                        }
+                        dd.getLogicalDocStruct().addMetadata(md);
+                    }
+                } catch (MetadataTypeNotAllowedException e) {
+                    resp.setError(true);
+                    resp.addErrorMessage("Metadata not allowed: " + name);
+                }
+            }
+        }
+    }
 }
