@@ -15,6 +15,7 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
+import org.goobi.api.db.RestDbHelper;
 import org.goobi.api.rest.model.RestProcess;
 import org.goobi.api.rest.request.SearchGroup;
 import org.goobi.api.rest.request.SearchQuery;
@@ -22,9 +23,12 @@ import org.goobi.api.rest.request.SearchQuery.RelationalOperator;
 import org.goobi.api.rest.request.SearchRequest;
 import org.goobi.api.rest.request.UpdateProcessMetadataReq;
 import org.goobi.api.rest.response.CreationResponse;
+import org.goobi.api.rest.response.ProcessStatusResponse;
+import org.goobi.api.rest.response.StepResponse;
 import org.goobi.api.rest.response.UpdateMetadataResponse;
 import org.goobi.beans.Process;
 import org.goobi.beans.Processproperty;
+import org.goobi.beans.Step;
 
 import de.sub.goobi.helper.exceptions.DAOException;
 import de.sub.goobi.helper.exceptions.SwapException;
@@ -52,9 +56,9 @@ public class Processes {
     @GET
     @Path("/search")
     @Produces(MediaType.APPLICATION_JSON)
-    public List<RestProcess> simpleSearch(@QueryParam("field") String field, @QueryParam("value") String value,
-            @QueryParam("limit") int limit, @QueryParam("offset") int offset, @QueryParam("orderby") String sortField,
-            @QueryParam("descending") boolean sortDescending) throws SQLException {
+    public List<RestProcess> simpleSearch(@QueryParam("field") String field, @QueryParam("value") String value, @QueryParam("limit") int limit,
+            @QueryParam("offset") int offset, @QueryParam("orderby") String sortField, @QueryParam("descending") boolean sortDescending)
+                    throws SQLException {
         SearchQuery query = new SearchQuery(field, value, RelationalOperator.LIKE);
         SearchGroup group = new SearchGroup();
         group.addFilter(query);
@@ -80,9 +84,8 @@ public class Processes {
     @Path("/{id}/metadata")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public UpdateMetadataResponse updateMetadata(@PathParam("id") int processId, UpdateProcessMetadataReq req)
-            throws ReadException, PreferencesException, WriteException, IOException, InterruptedException,
-            SwapException, DAOException {
+    public UpdateMetadataResponse updateMetadata(@PathParam("id") int processId, UpdateProcessMetadataReq req) throws ReadException,
+    PreferencesException, WriteException, IOException, InterruptedException, SwapException, DAOException {
         Process p = ProcessManager.getProcessById(processId);
         return req.apply(p);
     }
@@ -107,4 +110,56 @@ public class Processes {
         PropertyManager.saveProcessProperty(pp);
         return Response.accepted().build();
     }
+
+    @Path("{ppn}/status")
+    @GET
+    @Produces("text/json")
+    public Response getProcessStatusForPPNAsJson(@PathParam("ppn") String ppn) {
+        Response response = null;
+
+        List<Integer> ids = null;
+        try {
+            ids = RestDbHelper.getProcessIdsForIdentifier(ppn);
+        } catch (SQLException e) {
+
+        }
+        ProcessStatusResponse processStatusResponse = new ProcessStatusResponse();
+
+        if (ids == null || ids.isEmpty()) {
+            processStatusResponse.setResult("No proccess with identifier " + ppn + " found");
+            response = Response.status(Response.Status.NOT_FOUND).entity(processStatusResponse).build();
+        } else if (ids.size() > 1) {
+            // TODO
+            processStatusResponse.setResult("Found more than one process with identifier " + ppn);
+            response = Response.status(Response.Status.CONFLICT).entity(processStatusResponse).build();
+        } else {
+            Process process = ProcessManager.getProcessById(ids.get(0));
+
+            createResponse(process, processStatusResponse);
+            response = Response.status(Response.Status.OK).entity(processStatusResponse).build();
+        }
+
+        return response;
+    }
+
+    private void createResponse(Process p, ProcessStatusResponse resp) {
+        resp.setResult("ok");
+        resp.setCreationDate(p.getErstellungsdatum());
+        resp.setId(p.getId());
+        resp.setTitle(p.getTitel());
+
+        for (Step step : p.getSchritte()) {
+            StepResponse sr = new StepResponse();
+            resp.getStep().add(sr);
+            sr.setEndDate(step.getBearbeitungsende());
+            sr.setStartDate(step.getBearbeitungsbeginn());
+            sr.setStatus(step.getBearbeitungsstatusEnum().getTitle());
+            if (step.getBearbeitungsbenutzer() != null) {
+                sr.setUser(step.getBearbeitungsbenutzer().getNachVorname());
+            }
+            sr.setTitle(step.getTitel());
+            sr.setOrder(step.getReihenfolge());
+        }
+    }
+
 }

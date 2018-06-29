@@ -8,8 +8,6 @@ import org.apache.commons.dbutils.QueryRunner;
 import org.goobi.api.rest.model.RestProcess;
 import org.goobi.api.rest.request.SearchRequest;
 
-import com.sun.org.apache.bcel.internal.generic.NEW;
-
 import de.sub.goobi.persistence.managers.MySQLHelper;
 
 public class RestDbHelper {
@@ -33,4 +31,13 @@ public class RestDbHelper {
         }
         return results;
     }
+
+    public static List<Integer> getProcessIdsForIdentifier(String ppn) throws SQLException {
+        String sql = "select processid from metadata where name = ? and value = ?";
+        try (Connection conn = MySQLHelper.getInstance().getConnection()) {
+            QueryRunner run = new QueryRunner();
+            return run.query(conn, sql, MySQLHelper.resultSetToIntegerListHandler, "CatalogIDDigital", ppn);
+        }
+    }
+
 }
