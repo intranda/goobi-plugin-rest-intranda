@@ -345,6 +345,20 @@ public class CommandProcessCreate {
         ocr.setProcessId(process.getId());
         PropertyManager.saveProcessProperty(ocr);
         
+        // add template name information
+        Processproperty propTemplate = new Processproperty();
+        propTemplate.setTitel("Template");
+        propTemplate.setWert(template.getTitel());
+        propTemplate.setProcessId(process.getId());
+        PropertyManager.saveProcessProperty(propTemplate);
+        
+        // add template ID information
+        Processproperty propTemplateId = new Processproperty();
+        propTemplateId.setTitel("TemplateID");
+        propTemplateId.setWert(template.getId().toString());
+        propTemplateId.setProcessId(process.getId());
+        PropertyManager.saveProcessProperty(propTemplateId);
+        
         cr.setResult("success");
         cr.setProcessName(process.getTitel());
         cr.setProcessId(process.getId());
