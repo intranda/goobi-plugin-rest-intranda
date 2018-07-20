@@ -5,6 +5,7 @@ import java.sql.SQLException;
 import java.util.List;
 
 import javax.ws.rs.Consumes;
+import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
@@ -17,11 +18,12 @@ import javax.ws.rs.core.Response;
 
 import org.goobi.api.db.RestDbHelper;
 import org.goobi.api.rest.model.RestProcess;
+import org.goobi.api.rest.request.AddProcessMetadataReq;
+import org.goobi.api.rest.request.DeleteProcessMetadataReq;
 import org.goobi.api.rest.request.SearchGroup;
 import org.goobi.api.rest.request.SearchQuery;
 import org.goobi.api.rest.request.SearchQuery.RelationalOperator;
 import org.goobi.api.rest.request.SearchRequest;
-import org.goobi.api.rest.request.UpdateProcessMetadataReq;
 import org.goobi.api.rest.response.CreationResponse;
 import org.goobi.api.rest.response.ProcessStatusResponse;
 import org.goobi.api.rest.response.StepResponse;
@@ -80,11 +82,21 @@ public class Processes {
         return sr.search();
     }
 
-    @PUT
+    @DELETE
     @Path("/{id}/metadata")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public UpdateMetadataResponse updateMetadata(@PathParam("id") int processId, UpdateProcessMetadataReq req) throws ReadException,
+    public UpdateMetadataResponse deleteMetadata(@PathParam("id") int processId, DeleteProcessMetadataReq req) throws ReadException,
+            PreferencesException, WriteException, IOException, InterruptedException, SwapException, DAOException {
+        Process p = ProcessManager.getProcessById(processId);
+        return req.apply(p);
+    }
+
+    @POST
+    @Path("/{id}/metadata")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public UpdateMetadataResponse addMetadata(@PathParam("id") int processId, AddProcessMetadataReq req) throws ReadException,
             PreferencesException, WriteException, IOException, InterruptedException, SwapException, DAOException {
         Process p = ProcessManager.getProcessById(processId);
         return req.apply(p);
