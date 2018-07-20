@@ -58,7 +58,7 @@ public class Processes {
     @Produces(MediaType.APPLICATION_JSON)
     public List<RestProcess> simpleSearch(@QueryParam("field") String field, @QueryParam("value") String value, @QueryParam("limit") int limit,
             @QueryParam("offset") int offset, @QueryParam("orderby") String sortField, @QueryParam("descending") boolean sortDescending)
-                    throws SQLException {
+            throws SQLException {
         SearchQuery query = new SearchQuery(field, value, RelationalOperator.LIKE);
         SearchGroup group = new SearchGroup();
         group.addFilter(query);
@@ -85,7 +85,7 @@ public class Processes {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public UpdateMetadataResponse updateMetadata(@PathParam("id") int processId, UpdateProcessMetadataReq req) throws ReadException,
-    PreferencesException, WriteException, IOException, InterruptedException, SwapException, DAOException {
+            PreferencesException, WriteException, IOException, InterruptedException, SwapException, DAOException {
         Process p = ProcessManager.getProcessById(processId);
         return req.apply(p);
     }
@@ -111,9 +111,9 @@ public class Processes {
         return Response.accepted().build();
     }
 
-    @Path("{ppn}/status")
+    @Path("/ppns/{ppn}/status")
     @GET
-    @Produces("text/json")
+    @Produces(MediaType.APPLICATION_JSON)
     public Response getProcessStatusForPPNAsJson(@PathParam("ppn") String ppn) {
         Response response = null;
 
