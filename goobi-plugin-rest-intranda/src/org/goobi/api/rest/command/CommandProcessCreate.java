@@ -20,6 +20,7 @@ import org.apache.commons.lang.SystemUtils;
 import org.goobi.api.rest.request.CreationRequest;
 import org.goobi.api.rest.request.MpiCreationRequest;
 import org.goobi.api.rest.request.StanfordCreationRequest;
+import org.goobi.api.rest.request.StanfordCreationRequestTag;
 import org.goobi.api.rest.response.CreationResponse;
 import org.goobi.beans.Process;
 import org.goobi.beans.Processproperty;
@@ -344,6 +345,18 @@ public class CommandProcessCreate {
         ocr.setProcessId(process.getId());
         PropertyManager.saveProcessProperty(ocr);
 
+        if (req.getTags() != null && req.getTags().size()>0) {
+            for (StanfordCreationRequestTag tag : req.getTags()) {
+                if (StringUtils.isNotBlank(tag.getName())) {
+                    Processproperty ptag = new Processproperty();
+                    ptag.setTitel(tag.getName());
+                    ptag.setWert(tag.getValue());
+                    ptag.setProcessId(process.getId());
+                    PropertyManager.saveProcessProperty(ptag);
+                }
+            }
+        }
+        
         // add template name information
         Processproperty propTemplate = new Processproperty();
         propTemplate.setTitel("Template");
