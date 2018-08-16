@@ -1,11 +1,19 @@
 package org.goobi.api.rest.request;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlElementWrapper;
 import javax.xml.bind.annotation.XmlRootElement;
 
 import lombok.Data;
 
 @Data
 @XmlRootElement
+@XmlAccessorType(XmlAccessType.FIELD)
 public class StanfordCreationRequest {
 
     private String objectId; // druid:xx123yy4567
@@ -22,5 +30,11 @@ public class StanfordCreationRequest {
     private String  sdrWorkflow; // dpgImageWF
     private String  goobiWorkflow; // workflow name
    
+    @XmlElementWrapper
+    @XmlElement(name = "tag")
+    private List<StanfordCreationRequestTag> tags = new ArrayList<>();
+
+//    @XmlElementWrapper
+//    private List<StanfordCreationRequestTag> tag = new ArrayList<>();
 
 }
