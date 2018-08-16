@@ -156,8 +156,8 @@ public class CommandProcessCreate {
     @Produces(MediaType.TEXT_XML)
     public Response createProcessForStanford(StanfordCreationRequest req, @Context final HttpServletResponse response) {
         CreationResponse cr = new CreationResponse();
-        String processtitle = "_" + UghHelper.convertUmlaut(req.getObjectId().replace("druid:", "")).toLowerCase();
-        processtitle += UghHelper.convertUmlaut(req.getSourceID().replace(":", "_")).toLowerCase();
+        String processtitle = UghHelper.convertUmlaut(req.getObjectId().replace("druid:", "")).toLowerCase();
+        processtitle += "_" + UghHelper.convertUmlaut(req.getSourceID().replace(":", "_")).toLowerCase();
         processtitle.replaceAll("[\\W]", "");
 
         Process p = ProcessManager.getProcessByTitle(processtitle);
