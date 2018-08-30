@@ -17,12 +17,12 @@
 	<classpathentry kind="lib" path="/Goobi/webapp/WEB-INF/lib/log4j-1.2.16.jar"/>
 	<classpathentry kind="lib" path="/Goobi/webapp/WEB-INF/lib/jackson-module-jaxb-annotations-2.6.3.jar"/>
 	<classpathentry kind="lib" path="/Goobi/webapp/WEB-INF/lib/jackson-annotations-2.6.0.jar"/>
-	<classpathentry kind="lib" path="/Goobi/webapp/WEB-INF/lib/jackson-core-2.6.6.jar"/>
-	<classpathentry kind="lib" path="/Goobi/webapp/WEB-INF/lib/jackson-databind-2.6.6.jar"/>
-	<classpathentry kind="lib" path="/Goobi/webapp/WEB-INF/lib/jackson-dataformat-cbor-2.6.6.jar"/>
 	<classpathentry kind="lib" path="/Goobi/webapp/WEB-INF/lib/commons-dbutils-1.6-SNAPSHOT.jar"/>
 	<classpathentry kind="lib" path="/Goobi/webapp/WEB-INF/lib/gson-2.2.4.jar"/>
 	<classpathentry kind="lib" path="/Goobi/webapp/WEB-INF/lib/jdom-2.0.5.jar"/>
 	<classpathentry kind="lib" path="/Goobi/webapp/WEB-INF/lib/xalan-2.6.0.jar"/>
+	<classpathentry kind="lib" path="/Goobi/webapp/WEB-INF/lib/jackson-core-2.6.7.jar"/>
+	<classpathentry kind="lib" path="/Goobi/webapp/WEB-INF/lib/jackson-databind-2.6.7.1.jar"/>
+	<classpathentry kind="lib" path="/Goobi/webapp/WEB-INF/lib/jackson-dataformat-cbor-2.6.7.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

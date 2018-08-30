@@ -3,7 +3,6 @@ package org.goobi.api.rest.command;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 
-import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
@@ -17,7 +16,7 @@ import org.goobi.api.rest.response.DeletionResponse;
 import org.goobi.beans.Process;
 
 import de.sub.goobi.helper.Helper;
-import de.sub.goobi.helper.NIOFileUtils;
+import de.sub.goobi.helper.StorageProvider;
 import de.sub.goobi.persistence.managers.ProcessManager;
 
 @Path("/process")
@@ -55,10 +54,10 @@ public class CommandProcessDelete {
     private void deleteDirectory(Process process) {
 
         try {
-            NIOFileUtils.deleteDir(Paths.get(process.getProcessDataDirectory()));
+            StorageProvider.getInstance().deleteDir(Paths.get(process.getProcessDataDirectory()));
             java.nio.file.Path ocr = Paths.get(process.getOcrDirectory());
             if (Files.exists(ocr)) {
-                NIOFileUtils.deleteDir(ocr);
+                StorageProvider.getInstance().deleteDir(ocr);
             }
         } catch (Exception e) {
             Helper.setFehlerMeldung("Can not delete metadata directory", e);
