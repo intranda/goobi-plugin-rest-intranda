@@ -1,8 +1,6 @@
 package org.goobi.api.rest;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -21,7 +19,7 @@ import org.goobi.api.rest.response.StepResponse;
 import org.goobi.beans.Process;
 import org.goobi.beans.Step;
 
-import de.sub.goobi.helper.NIOFileUtils;
+import de.sub.goobi.helper.StorageProvider;
 import de.sub.goobi.helper.exceptions.DAOException;
 import de.sub.goobi.helper.exceptions.SwapException;
 import de.sub.goobi.persistence.managers.ProcessManager;
@@ -37,8 +35,8 @@ public class CommandProcessStatus {
     @Path("details/title/{processTitle}")
     @GET
     @Produces("text/json")
-//    @Produces({"text/json", "application/xml"})
-   
+    //    @Produces({"text/json", "application/xml"})
+
     public ProcessStatusResponse getProcessStatusAsJson(@PathParam("processTitle") String processTitle) {
         ProcessStatusResponse resp = getData(processTitle);
         return resp;
@@ -51,22 +49,22 @@ public class CommandProcessStatus {
         ProcessStatusResponse resp = getData(processId);
         return resp;
     }
-    
-//    @Path("details/title/xml/{processTitle}")
-//    @GET
-//    @Produces(MediaType.TEXT_XML)
-//    public ProcessStatusResponse getProcessStatusAsXml(@PathParam("processTitle") String processTitle) {
-//        ProcessStatusResponse resp = getData(processTitle);
-//        return resp;
-//    }
-//    
-//    @Path("details/id/xml/{processId}")
-//    @GET
-//    @Produces(MediaType.TEXT_XML)
-//    public ProcessStatusResponse getProcessStatusAsXml(@PathParam("processTitle") int processId) {
-//        ProcessStatusResponse resp = getData(processId);
-//        return resp;
-//    }
+
+    //    @Path("details/title/xml/{processTitle}")
+    //    @GET
+    //    @Produces(MediaType.TEXT_XML)
+    //    public ProcessStatusResponse getProcessStatusAsXml(@PathParam("processTitle") String processTitle) {
+    //        ProcessStatusResponse resp = getData(processTitle);
+    //        return resp;
+    //    }
+    //    
+    //    @Path("details/id/xml/{processId}")
+    //    @GET
+    //    @Produces(MediaType.TEXT_XML)
+    //    public ProcessStatusResponse getProcessStatusAsXml(@PathParam("processTitle") int processId) {
+    //        ProcessStatusResponse resp = getData(processId);
+    //        return resp;
+    //    }
 
     @Path("report/{startdate}/{enddate}")
     @GET
@@ -84,7 +82,7 @@ public class CommandProcessStatus {
         List<ProcessStatusResponse> processList = new LinkedList<>();
 
         for (Integer processid : processIdList) {
-        	Process p = ProcessManager.getProcessById(processid);
+            Process p = ProcessManager.getProcessById(processid);
             ProcessStatusResponse resp = getData(p.getTitel());
             processList.add(resp);
         }
@@ -115,7 +113,7 @@ public class CommandProcessStatus {
         }
         return checkStatusProcessContent(p);
     }
-    
+
     @Path("check/title/{processTitle}")
     @GET
     @Produces(MediaType.TEXT_PLAIN)
@@ -127,10 +125,10 @@ public class CommandProcessStatus {
         return checkStatusProcessContent(p);
     }
 
-	private Response checkStatusProcessContent(Process p) {
-		try {
+    private Response checkStatusProcessContent(Process p) {
+        try {
             String imageFolder = p.getImagesTifDirectory(false);
-            List<String> files = NIOFileUtils.list(imageFolder);
+            List<String> files = StorageProvider.getInstance().list(imageFolder);
             if (files.isEmpty()) {
                 return Response.status(Status.PARTIAL_CONTENT).entity("Process has no images.").build();
             }
@@ -140,7 +138,7 @@ public class CommandProcessStatus {
         }
 
         return Response.ok().entity("Process ok.").build();
-	}
+    }
 
     private ProcessStatusResponse getData(String processTitle) {
         Process p = ProcessManager.getProcessByTitle(processTitle);
@@ -152,7 +150,7 @@ public class CommandProcessStatus {
         }
         return resp;
     }
-    
+
     private ProcessStatusResponse getData(int processId) {
         Process p = ProcessManager.getProcessById(processId);
         ProcessStatusResponse resp = new ProcessStatusResponse();
@@ -164,23 +162,23 @@ public class CommandProcessStatus {
         return resp;
     }
 
-	private void createResponse(Process p, ProcessStatusResponse resp) {
-		resp.setResult("ok");
-		resp.setCreationDate(p.getErstellungsdatum());
-		resp.setId(p.getId());
-		resp.setTitle(p.getTitel());
+    private void createResponse(Process p, ProcessStatusResponse resp) {
+        resp.setResult("ok");
+        resp.setCreationDate(p.getErstellungsdatum());
+        resp.setId(p.getId());
+        resp.setTitle(p.getTitel());
 
-		for (Step step : p.getSchritte()) {
-		    StepResponse sr = new StepResponse();
-		    resp.getStep().add(sr);
-		    sr.setEndDate(step.getBearbeitungsende());
-		    sr.setStartDate(step.getBearbeitungsbeginn());
-		    sr.setStatus(step.getBearbeitungsstatusEnum().getTitle());
-		    if (step.getBearbeitungsbenutzer() != null) {
-		        sr.setUser(step.getBearbeitungsbenutzer().getNachVorname());
-		    }
-		    sr.setTitle(step.getTitel());
-		    sr.setOrder(step.getReihenfolge());
-		}
-	}
+        for (Step step : p.getSchritte()) {
+            StepResponse sr = new StepResponse();
+            resp.getStep().add(sr);
+            sr.setEndDate(step.getBearbeitungsende());
+            sr.setStartDate(step.getBearbeitungsbeginn());
+            sr.setStatus(step.getBearbeitungsstatusEnum().getTitle());
+            if (step.getBearbeitungsbenutzer() != null) {
+                sr.setUser(step.getBearbeitungsbenutzer().getNachVorname());
+            }
+            sr.setTitle(step.getTitel());
+            sr.setOrder(step.getReihenfolge());
+        }
+    }
 }

@@ -1,7 +1,6 @@
 package org.goobi.api.rest;
 
 import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -22,14 +21,13 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Context;
-
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.ResponseBuilder;
 import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.StreamingOutput;
 import javax.ws.rs.core.UriInfo;
 
-import de.sub.goobi.helper.NIOFileUtils;
+import de.sub.goobi.helper.StorageProvider;
 import de.sub.goobi.helper.exceptions.DAOException;
 import de.sub.goobi.helper.exceptions.SwapException;
 import de.sub.goobi.persistence.managers.ProcessManager;
@@ -50,7 +48,7 @@ public class CommandImageDownload {
         return startDownload(process);
 
     }
-    
+
     @Path("download/title/{processTitle}")
     @GET
     @Produces("application/zip")
@@ -61,23 +59,23 @@ public class CommandImageDownload {
     }
 
     // TODO get rid of temporary file
-	private Response startDownload(org.goobi.beans.Process process) {
-		if (process == null) {
+    private Response startDownload(org.goobi.beans.Process process) {
+        if (process == null) {
             ResponseBuilder response = Response.status(Status.BAD_REQUEST);
             return response.build();
         }
         List<java.nio.file.Path> images = null;
         try {
-            images = NIOFileUtils.listFiles(process.getImagesTifDirectory(true));
+            images = StorageProvider.getInstance().listFiles(process.getImagesTifDirectory(true));
         } catch (IOException | InterruptedException | SwapException | DAOException e1) {
             log.error(e1);
         }
-        
+
         if (images.isEmpty()) {
             ResponseBuilder response = Response.status(Status.NO_CONTENT);
             return response.build();
         }
-        
+
         final String zipFile = "/tmp/" + process.getTitel() + ".zip";
         try {
             zipFiles(images, Paths.get(zipFile).toFile());
@@ -99,17 +97,19 @@ public class CommandImageDownload {
                 } catch (Exception e) {
                     throw new WebApplicationException(e);
                 } finally {
-                    if (output != null)
+                    if (output != null) {
                         output.close();
-                    if (input != null)
+                    }
+                    if (input != null) {
                         input.close();
+                    }
                 }
             }
         };
 
         return Response.ok(fileStream, "application/zip").header("content-disposition", "attachment; filename = " + process.getTitel() + ".zip")
                 .build();
-	}
+    }
 
     private static byte[] zipFiles(List<java.nio.file.Path> sourceFiles, File zipFile) throws IOException {
 
@@ -180,7 +180,7 @@ public class CommandImageDownload {
             if (zos != null && entry != null) {
                 zos.closeEntry();
             }
-            List<java.nio.file.Path> subfiles = NIOFileUtils.listFiles(file.toString());
+            List<java.nio.file.Path> subfiles = StorageProvider.getInstance().listFiles(file.toString());
 
             if (!subfiles.isEmpty()) {
                 for (java.nio.file.Path subFile : subfiles) {
