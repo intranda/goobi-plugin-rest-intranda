@@ -122,3 +122,8 @@ Close step and remove symlink:
 http://localhost:8080/Goobi/api/closestep/testadmin/2124143?token=test
 
 
+#####################   Update Process Property   #####################
+Change process property:
+
+curl -X PUT -H "Content-Type: application/json" -H "token: test" -d '1q2w3e' "http://goobitest.fritz.box/goobi/api/processes/37487/properties/foo"
+

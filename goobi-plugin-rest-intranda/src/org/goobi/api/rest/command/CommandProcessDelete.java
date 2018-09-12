@@ -1,4 +1,4 @@
-package org.goobi.api.rest;
+package org.goobi.api.rest.command;
 
 import java.nio.file.Files;
 import java.nio.file.Paths;

@@ -1,4 +1,4 @@
-package org.goobi.api.rest;
+package org.goobi.api.rest.command;
 
 import java.util.Date;
 import java.util.List;
@@ -157,8 +157,8 @@ public class CommandProcessCreate {
     @Produces(MediaType.TEXT_XML)
     public Response createProcessForStanford(StanfordCreationRequest req, @Context final HttpServletResponse response) {
         CreationResponse cr = new CreationResponse();
-        String processtitle = UghHelper.convertUmlaut(req.getObjectId().replace("druid:","")).toLowerCase();
-        processtitle += "_" + UghHelper.convertUmlaut(req.getSourceID().replace(":","_")).toLowerCase();
+        String processtitle = UghHelper.convertUmlaut(req.getObjectId().replace("druid:", "")).toLowerCase();
+        processtitle += "_" + UghHelper.convertUmlaut(req.getSourceID().replace(":", "_")).toLowerCase();
         processtitle.replaceAll("[\\W]", "");
 
         Process p = ProcessManager.getProcessByTitle(processtitle);
@@ -223,15 +223,14 @@ public class CommandProcessCreate {
         process.setTitel(processtitle);
 
         if (StringUtils.isNotBlank(req.getProject())) {
-            List <Project> projects = ProjectManager.getAllProjects();
+            List<Project> projects = ProjectManager.getAllProjects();
             for (Project proj : projects) {
-				if (proj.getTitel().equals(req.getProject())){
-					process.setProjekt(proj);
-				}
-			}
+                if (proj.getTitel().equals(req.getProject())) {
+                    process.setProjekt(proj);
+                }
+            }
         }
-        
-        
+
         try {
             NeuenProzessAnlegen(process, template, fileformat, prefs);
         } catch (Exception e) {
@@ -241,18 +240,18 @@ public class CommandProcessCreate {
             return resp;
         }
         if (StringUtils.isNotBlank(req.getObjectId())) {
-        	Processproperty idObject = new Processproperty();
+            Processproperty idObject = new Processproperty();
             idObject.setTitel("objectId");
             idObject.setWert(req.getObjectId());
             idObject.setProcessId(process.getId());
             PropertyManager.saveProcessProperty(idObject);
-            
+
             Processproperty argoURL = new Processproperty();
             argoURL.setTitel("Argo URL");
             argoURL.setWert("https://argo.stanford.edu/view/" + req.getObjectId());
             argoURL.setProcessId(process.getId());
             PropertyManager.saveProcessProperty(argoURL);
-            
+
             Processproperty PURL = new Processproperty();
             PURL.setTitel("PURL");
             PURL.setWert("https://purl.stanford.edu/" + req.getObjectId().replace("druid:", ""));
@@ -339,14 +338,14 @@ public class CommandProcessCreate {
         Processproperty ocr = new Processproperty();
         ocr.setTitel("OCR");
         if (StringUtils.isNotBlank(req.getOcr())) {
-        	ocr.setWert(req.getOcr());
+            ocr.setWert(req.getOcr());
         } else {
-        	ocr.setWert("false");
+            ocr.setWert("false");
         }
         ocr.setProcessId(process.getId());
         PropertyManager.saveProcessProperty(ocr);
-        
-        if (req.getTags() != null && req.getTags().size()>0) {
+
+        if (req.getTags() != null && req.getTags().size() > 0) {
             for (StanfordCreationRequestTag tag : req.getTags()) {
                 if (StringUtils.isNotBlank(tag.getName())) {
                     Processproperty ptag = new Processproperty();
@@ -357,35 +356,33 @@ public class CommandProcessCreate {
                 }
             }
         }
-        
+
         // add template name information
         Processproperty propTemplate = new Processproperty();
         propTemplate.setTitel("Template");
         propTemplate.setWert(template.getTitel());
         propTemplate.setProcessId(process.getId());
         PropertyManager.saveProcessProperty(propTemplate);
-        
         // add template ID information
         Processproperty propTemplateId = new Processproperty();
         propTemplateId.setTitel("TemplateID");
         propTemplateId.setWert(template.getId().toString());
         propTemplateId.setProcessId(process.getId());
         PropertyManager.saveProcessProperty(propTemplateId);
-        
         cr.setResult("success");
         cr.setProcessName(process.getTitel());
         cr.setProcessId(process.getId());
         Response resp = Response.status(Response.Status.CREATED).entity(cr).build();
         return resp;
     }
-    
+
     @Path("/mpicreate")
     @POST
     @Consumes({ MediaType.TEXT_XML, MediaType.APPLICATION_XML })
     @Produces(MediaType.TEXT_XML)
     public Response createProcessForMPI(MpiCreationRequest req, @Context final HttpServletResponse response) {
         CreationResponse cr = new CreationResponse();
-        String processtitle = UghHelper.convertUmlaut(req.getBarcode().replace(":","_")).toLowerCase();
+        String processtitle = UghHelper.convertUmlaut(req.getBarcode().replace(":", "_")).toLowerCase();
         processtitle.replaceAll("[\\W]", "");
 
         Process p = ProcessManager.getProcessByTitle(processtitle);
@@ -429,7 +426,7 @@ public class CommandProcessCreate {
             Metadata identifierDigital = new Metadata(prefs.getMetadataTypeByName("CatalogIDDigital"));
             identifierDigital.setValue(req.getBarcode());
             logical.addMetadata(identifierDigital);
-          
+
         } catch (UGHException e) {
             cr.setResult("error");
             cr.setErrorText("Error during metadata creation for " + req.getBarcode() + ": " + e.getMessage());
@@ -504,7 +501,7 @@ public class CommandProcessCreate {
             goobiWorkflow.setProcessId(process.getId());
             PropertyManager.saveProcessProperty(goobiWorkflow);
         }
-        
+
         if (StringUtils.isNotBlank(req.getDjangoWorkflow())) {
             Processproperty djangoWorkflow = new Processproperty();
             djangoWorkflow.setTitel("djangoWorkflow");
@@ -512,7 +509,7 @@ public class CommandProcessCreate {
             djangoWorkflow.setProcessId(process.getId());
             PropertyManager.saveProcessProperty(djangoWorkflow);
         }
-        
+
         cr.setResult("success");
         cr.setProcessName(process.getTitel());
         cr.setProcessId(process.getId());
@@ -541,7 +538,7 @@ public class CommandProcessCreate {
     private Fileformat getOpacRequest(String opacIdentifier, Prefs prefs, String myCatalogue) throws Exception {
         // get logical data from opac
         ConfigOpacCatalogue coc = ConfigOpac.getInstance().getCatalogueByName(myCatalogue);
-//        ConfigOpacCatalogue coc = new ConfigOpac().getCatalogueByName(myCatalogue);
+        //        ConfigOpacCatalogue coc = new ConfigOpac().getCatalogueByName(myCatalogue);
         IOpacPlugin myImportOpac = (IOpacPlugin) PluginLoader.getPluginByTitle(PluginType.Opac, coc.getOpacType());
         Fileformat ff = myImportOpac.search("12", opacIdentifier, coc, prefs);
         Metadata md = new Metadata(prefs.getMetadataTypeByName("singleDigCollection"));
