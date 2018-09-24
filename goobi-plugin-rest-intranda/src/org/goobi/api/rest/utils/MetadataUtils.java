@@ -96,7 +96,7 @@ public class MetadataUtils {
             RestMetadata meta = new RestMetadata();
             String name = el.getAttributeValue("name");
 
-            if (!req.getWantedFields().contains(name)) {
+            if (req.getWantedFields() != null && !req.getWantedFields().contains(name)) {
                 continue;
             }
             String type = el.getAttributeValue("type");
