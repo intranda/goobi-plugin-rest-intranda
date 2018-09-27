@@ -2,6 +2,7 @@ package org.goobi.api.rest;
 
 import java.io.IOException;
 import java.sql.SQLException;
+import java.util.Arrays;
 import java.util.List;
 
 import javax.ws.rs.Consumes;
@@ -59,7 +60,8 @@ public class Processes {
     @Path("/search")
     @Produces(MediaType.APPLICATION_JSON)
     public List<RestProcess> simpleSearch(@QueryParam("field") String field, @QueryParam("value") String value, @QueryParam("limit") int limit,
-            @QueryParam("offset") int offset, @QueryParam("orderby") String sortField, @QueryParam("descending") boolean sortDescending)
+            @QueryParam("offset") int offset, @QueryParam("orderby") String sortField, @QueryParam("descending") boolean sortDescending,
+            @QueryParam("filterProjects") String filterProjects)
             throws SQLException {
         SearchQuery query = new SearchQuery(field, value, RelationalOperator.LIKE);
         SearchGroup group = new SearchGroup();
@@ -70,6 +72,7 @@ public class Processes {
         req.setOffset(offset);
         req.setSortField(sortField);
         req.setSortDescending(sortDescending);
+        req.setFilterProjects(Arrays.asList(filterProjects.split(",")));
 
         return req.search();
     }
