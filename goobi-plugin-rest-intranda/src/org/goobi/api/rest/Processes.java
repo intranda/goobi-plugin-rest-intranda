@@ -72,7 +72,9 @@ public class Processes {
         req.setOffset(offset);
         req.setSortField(sortField);
         req.setSortDescending(sortDescending);
-        req.setFilterProjects(Arrays.asList(filterProjects.split(",")));
+        if (filterProjects != null) {
+            req.setFilterProjects(Arrays.asList(filterProjects.split(",")));
+        }
 
         return req.search();
     }
