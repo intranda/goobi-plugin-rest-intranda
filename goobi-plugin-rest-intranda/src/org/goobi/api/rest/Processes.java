@@ -121,7 +121,10 @@ public class Processes {
             }
         }
         if (pp == null) {
-            return Response.status(404).build();
+            pp = new Processproperty();
+            Process p = ProcessManager.getProcessById(processId);
+            pp.setProzess(p);
+            pp.setTitel(name);
         }
         pp.setWert(newValue);
         PropertyManager.saveProcessProperty(pp);
