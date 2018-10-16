@@ -17,12 +17,14 @@ import javax.ws.rs.core.UriInfo;
 import org.goobi.api.rest.response.ProcessStatusResponse;
 import org.goobi.api.rest.response.StepResponse;
 import org.goobi.beans.Process;
+import org.goobi.beans.Processproperty;
 import org.goobi.beans.Step;
 
 import de.sub.goobi.helper.StorageProvider;
 import de.sub.goobi.helper.exceptions.DAOException;
 import de.sub.goobi.helper.exceptions.SwapException;
 import de.sub.goobi.persistence.managers.ProcessManager;
+import de.sub.goobi.persistence.managers.PropertyManager;
 import lombok.extern.log4j.Log4j;
 
 @Path("/process")
@@ -34,19 +36,23 @@ public class CommandProcessStatus {
 
     @Path("details/title/{processTitle}")
     @GET
-    @Produces("text/json")
-    //    @Produces({"text/json", "application/xml"})
+    @Produces(MediaType.APPLICATION_JSON)
+    //    @Produces({MediaType.APPLICATION_JSON, "application/xml"})
 
     public ProcessStatusResponse getProcessStatusAsJson(@PathParam("processTitle") String processTitle) {
         ProcessStatusResponse resp = getData(processTitle);
+        List<Processproperty> pps = PropertyManager.getProcessPropertiesForProcess(resp.getId());
+        resp.setProperties(pps);
         return resp;
     }
 
     @Path("details/id/{processId}")
     @GET
-    @Produces("text/json")
+    @Produces(MediaType.APPLICATION_JSON)
     public ProcessStatusResponse getProcessStatusAsJson(@PathParam("processId") int processId) {
         ProcessStatusResponse resp = getData(processId);
+        List<Processproperty> pps = PropertyManager.getProcessPropertiesForProcess(processId);
+        resp.setProperties(pps);
         return resp;
     }
 
@@ -68,7 +74,7 @@ public class CommandProcessStatus {
 
     @Path("report/{startdate}/{enddate}")
     @GET
-    @Produces("text/json")
+    @Produces(MediaType.APPLICATION_JSON)
     public List<ProcessStatusResponse> getProcessStatusList(@PathParam("startdate") String start, @PathParam("enddate") String end) {
         String sql = "IstTemplate = false AND ";
 
@@ -84,6 +90,8 @@ public class CommandProcessStatus {
         for (Integer processid : processIdList) {
             Process p = ProcessManager.getProcessById(processid);
             ProcessStatusResponse resp = getData(p.getTitel());
+            List<Processproperty> pps = PropertyManager.getProcessPropertiesForProcess(processid);
+            resp.setProperties(pps);
             processList.add(resp);
         }
 
@@ -92,7 +100,7 @@ public class CommandProcessStatus {
 
     @Path("report/{startdate}")
     @GET
-    @Produces("text/json")
+    @Produces(MediaType.APPLICATION_JSON)
     public List<ProcessStatusResponse> getProcessStatusList(@PathParam("startdate") String start) {
         return getProcessStatusList(start, null);
     }
