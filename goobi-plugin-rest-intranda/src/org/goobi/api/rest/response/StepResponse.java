@@ -14,18 +14,18 @@ import lombok.Data;
 @JsonPropertyOrder({ "title", "status", "user", "startDate", "endDate", "status", "order" })
 public @Data class StepResponse {
 
-    @JsonFormat(pattern = "yyyy-MM-dd hh:mm:ss")
+    @JsonFormat(shape=JsonFormat.Shape.STRING, pattern="yyyy-MM-dd'T'HH:mm:ssZ", timezone="CET")
     private Date startDate;
-    
-    @JsonFormat(pattern = "yyyy-MM-dd hh:mm:ss")
+
+    @JsonFormat(shape=JsonFormat.Shape.STRING, pattern="yyyy-MM-dd'T'HH:mm:ssZ", timezone="CET")
     private Date endDate;
-    
+
     private String user;
-    
+
     private String status;
-    
+
     private String title;
-    
+
     private int order;
-    
+
 }

@@ -42,7 +42,7 @@ public class CommandProcessStatus {
     public ProcessStatusResponse getProcessStatusAsJson(@PathParam("processTitle") String processTitle) {
         ProcessStatusResponse resp = getData(processTitle);
         List<Processproperty> pps = PropertyManager.getProcessPropertiesForProcess(resp.getId());
-        resp.setProperties(pps);
+        resp.addProperties(pps);
         return resp;
     }
 
@@ -52,7 +52,7 @@ public class CommandProcessStatus {
     public ProcessStatusResponse getProcessStatusAsJson(@PathParam("processId") int processId) {
         ProcessStatusResponse resp = getData(processId);
         List<Processproperty> pps = PropertyManager.getProcessPropertiesForProcess(processId);
-        resp.setProperties(pps);
+        resp.addProperties(pps);
         return resp;
     }
 
@@ -63,7 +63,7 @@ public class CommandProcessStatus {
     //        ProcessStatusResponse resp = getData(processTitle);
     //        return resp;
     //    }
-    //    
+    //
     //    @Path("details/id/xml/{processId}")
     //    @GET
     //    @Produces(MediaType.TEXT_XML)
@@ -91,7 +91,7 @@ public class CommandProcessStatus {
             Process p = ProcessManager.getProcessById(processid);
             ProcessStatusResponse resp = getData(p.getTitel());
             List<Processproperty> pps = PropertyManager.getProcessPropertiesForProcess(processid);
-            resp.setProperties(pps);
+            resp.addProperties(pps);
             processList.add(resp);
         }
 
@@ -175,6 +175,11 @@ public class CommandProcessStatus {
         resp.setCreationDate(p.getErstellungsdatum());
         resp.setId(p.getId());
         resp.setTitle(p.getTitel());
+        if ("100000000".equals(p.getSortHelperStatus())) {
+            resp.setProcessCompleted(true);
+        }else {
+            resp.setProcessCompleted(false);
+        }
 
         for (Step step : p.getSchritte()) {
             StepResponse sr = new StepResponse();

@@ -14,7 +14,7 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import lombok.Data;
 
 @XmlRootElement
-@JsonPropertyOrder({ "result", "title", "id", "creationDate", "step" })
+@JsonPropertyOrder({ "result", "title", "id", "creationDate", "processCompleted", "step" })
 public @Data class ProcessStatusResponse {
 
     private String result; // success, error
@@ -23,11 +23,22 @@ public @Data class ProcessStatusResponse {
 
     private int id;
 
-    @JsonFormat(pattern = "yyyy-MM-dd hh:mm:ss")
+    private boolean processCompleted;
+
+    @JsonFormat(shape=JsonFormat.Shape.STRING, pattern="yyyy-MM-dd'T'HH:mm:ssZ", timezone="CET")
     private Date creationDate;
 
     List<StepResponse> step = new ArrayList<>();
 
-    List<Processproperty> properties;
+    List<PropertyResponse> properties = new ArrayList<>();
+
+    public void addProperties(List<Processproperty> propertyList) {
+        for (Processproperty property : propertyList) {
+            PropertyResponse resp = new PropertyResponse();
+            resp.setTitle(property.getTitel());
+            resp.setValue(property.getWert());
+            properties.add(resp);
+        }
+    }
 
 }
