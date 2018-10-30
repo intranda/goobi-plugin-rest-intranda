@@ -66,6 +66,32 @@ public class CommandStepClose {
         return closeStepAndRemoveLink(null, so.getId());
     }
 
+
+    @Path("/processid/{processid}/{stepname}")
+    @POST
+    @Produces(MediaType.TEXT_XML)
+    public Response closeStepByProcessIdAndName(@PathParam("processid") Integer processid, @PathParam("stepname") String stepName) {
+        Process p = ProcessManager.getProcessById(processid);
+        List<Step> allSteps = StepManager.getStepsForProcess(p.getId());
+        Step so = null;
+        for (Step step : allSteps) {
+            if (step.getTitel().equals(stepName)) {
+                so = step;
+                break;
+            }
+        }
+        if (so == null) {
+            CloseStepResponse cr = new CloseStepResponse();
+            cr.setResult("error");
+            String message = "Step not found";
+            cr.setComment(message);
+            Status status = Response.Status.NOT_FOUND;
+            return Response.status(status).entity(cr).build();
+        }
+        return closeStepAndRemoveLink(null, so.getId());
+    }
+
+
     @Path("/{stepid}")
     @POST
     @Produces(MediaType.TEXT_XML)
