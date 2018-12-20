@@ -240,135 +240,42 @@ public class CommandProcessCreate {
             return resp;
         }
         if (StringUtils.isNotBlank(req.getObjectId())) {
-            Processproperty idObject = new Processproperty();
-            idObject.setTitel("objectId");
-            idObject.setWert(req.getObjectId());
-            idObject.setProcessId(process.getId());
-            PropertyManager.saveProcessProperty(idObject);
-
-            Processproperty argoURL = new Processproperty();
-            argoURL.setTitel("Argo URL");
-            argoURL.setWert("https://argo.stanford.edu/view/" + req.getObjectId());
-            argoURL.setProcessId(process.getId());
-            PropertyManager.saveProcessProperty(argoURL);
-
-            Processproperty PURL = new Processproperty();
-            PURL.setTitel("PURL");
-            PURL.setWert("https://purl.stanford.edu/" + req.getObjectId().replace("druid:", ""));
-            PURL.setProcessId(process.getId());
-            PropertyManager.saveProcessProperty(PURL);
+            setProperty(process.getId(), "objectId", req.getObjectId(), true);
+            setProperty(process.getId(), "Argo URL", "https://argo.stanford.edu/view/" + req.getObjectId(), true);
+            setProperty(process.getId(), "PURL", "https://purl.stanford.edu/" + req.getObjectId().replace("druid:", ""), true);
+            
         }
-        if (StringUtils.isNotBlank(req.getObjectType())) {
-            Processproperty objectType = new Processproperty();
-            objectType.setTitel("objectType");
-            objectType.setWert(req.getObjectType());
-            objectType.setProcessId(process.getId());
-            PropertyManager.saveProcessProperty(objectType);
-        }
-        if (StringUtils.isNotBlank(req.getSourceID())) {
-            Processproperty idSource = new Processproperty();
-            idSource.setTitel("sourceID");
-            idSource.setWert(req.getSourceID());
-            idSource.setProcessId(process.getId());
-            PropertyManager.saveProcessProperty(idSource);
-        }
-        if (StringUtils.isNotBlank(req.getTitle())) {
-            Processproperty labelObject = new Processproperty();
-            labelObject.setTitel("title");
-            labelObject.setWert(req.getTitle());
-            labelObject.setProcessId(process.getId());
-            PropertyManager.saveProcessProperty(labelObject);
-        }
-        if (StringUtils.isNotBlank(req.getContentType())) {
-            Processproperty tagProcess = new Processproperty();
-            tagProcess.setTitel("contentType");
-            tagProcess.setWert(req.getContentType());
-            tagProcess.setProcessId(process.getId());
-            PropertyManager.saveProcessProperty(tagProcess);
-        }
-        if (StringUtils.isNotBlank(req.getProject())) {
-            Processproperty tagProject = new Processproperty();
-            tagProject.setTitel("project");
-            tagProject.setWert(req.getProject());
-            tagProject.setProcessId(process.getId());
-            PropertyManager.saveProcessProperty(tagProject);
-        }
-        if (StringUtils.isNotBlank(req.getCatkey())) {
-            Processproperty catkey = new Processproperty();
-            catkey.setTitel("catkey");
-            catkey.setWert(req.getCatkey());
-            catkey.setProcessId(process.getId());
-            PropertyManager.saveProcessProperty(catkey);
-        }
-        if (StringUtils.isNotBlank(req.getBarcode())) {
-            Processproperty barcode = new Processproperty();
-            barcode.setTitel("barcode");
-            barcode.setWert(req.getBarcode());
-            barcode.setProcessId(process.getId());
-            PropertyManager.saveProcessProperty(barcode);
-        }
-        if (StringUtils.isNotBlank(req.getCollectionId())) {
-            Processproperty collectionId = new Processproperty();
-            collectionId.setTitel("collectionId");
-            collectionId.setWert(req.getCollectionId());
-            collectionId.setProcessId(process.getId());
-            PropertyManager.saveProcessProperty(collectionId);
-        }
-        if (StringUtils.isNotBlank(req.getCollectionName())) {
-            Processproperty collectionName = new Processproperty();
-            collectionName.setTitel("collectionName");
-            collectionName.setWert(req.getCollectionName());
-            collectionName.setProcessId(process.getId());
-            PropertyManager.saveProcessProperty(collectionName);
-        }
-        if (StringUtils.isNotBlank(req.getSdrWorkflow())) {
-            Processproperty sdrWorkflow = new Processproperty();
-            sdrWorkflow.setTitel("sdrWorkflow");
-            sdrWorkflow.setWert(req.getSdrWorkflow());
-            sdrWorkflow.setProcessId(process.getId());
-            PropertyManager.saveProcessProperty(sdrWorkflow);
-        }
-        if (StringUtils.isNotBlank(req.getGoobiWorkflow())) {
-            Processproperty goobiWorkflow = new Processproperty();
-            goobiWorkflow.setTitel("goobiWorkflow");
-            goobiWorkflow.setWert(req.getGoobiWorkflow());
-            goobiWorkflow.setProcessId(process.getId());
-            PropertyManager.saveProcessProperty(goobiWorkflow);
-        }
-        Processproperty ocr = new Processproperty();
-        ocr.setTitel("OCR");
+        setProperty(process.getId(), "objectType", req.getObjectType(), true);
+        setProperty(process.getId(), "sourceID", req.getSourceID(), true);
+        setProperty(process.getId(), "title", req.getTitle(), true);
+        setProperty(process.getId(), "contentType", req.getContentType(), true);
+        setProperty(process.getId(), "project", req.getProject(), true);
+        setProperty(process.getId(), "catkey", req.getCatkey(), true);
+        setProperty(process.getId(), "barcode", req.getBarcode(), true);
+        setProperty(process.getId(), "collectionId", req.getCollectionId(), true);
+        setProperty(process.getId(), "collectionName", req.getCollectionName(), true);
+        setProperty(process.getId(), "sdrWorkflow", req.getSdrWorkflow(), true);
+        setProperty(process.getId(), "goobiWorkflow", req.getGoobiWorkflow(), true);
+        // if OCR shall be done
+        String ocr = "false";
         if (StringUtils.isNotBlank(req.getOcr())) {
-            ocr.setWert(req.getOcr());
-        } else {
-            ocr.setWert("false");
+            ocr=req.getOcr();
         }
-        ocr.setProcessId(process.getId());
-        PropertyManager.saveProcessProperty(ocr);
+        setProperty(process.getId(), "OCR", ocr, true);
 
         if (req.getTags() != null && req.getTags().size() > 0) {
             for (StanfordCreationRequestTag tag : req.getTags()) {
                 if (StringUtils.isNotBlank(tag.getName())) {
-                    Processproperty ptag = new Processproperty();
-                    ptag.setTitel(tag.getName());
-                    ptag.setWert(tag.getValue());
-                    ptag.setProcessId(process.getId());
-                    PropertyManager.saveProcessProperty(ptag);
+                    setProperty(process.getId(), tag.getName(), tag.getValue(), false);
                 }
             }
         }
 
         // add template name information
-        Processproperty propTemplate = new Processproperty();
-        propTemplate.setTitel("Template");
-        propTemplate.setWert(template.getTitel());
-        propTemplate.setProcessId(process.getId());
-        PropertyManager.saveProcessProperty(propTemplate);
+        setProperty(process.getId(), "Template", template.getTitel(), true);
         // add template ID information
-        Processproperty propTemplateId = new Processproperty();
-        propTemplateId.setTitel("TemplateID");
-        propTemplateId.setWert(template.getId().toString());
-        propTemplateId.setProcessId(process.getId());
-        PropertyManager.saveProcessProperty(propTemplateId);
+        setProperty(process.getId(), "TemplateID", template.getId().toString(), true);
+       
         cr.setResult("success");
         cr.setProcessName(process.getTitel());
         cr.setProcessId(process.getId());
@@ -628,4 +535,30 @@ public class CommandProcessCreate {
         return "";
     }
 
+    
+    private void setProperty(int processId, String name, String value, boolean skipIfExistsAlready) {
+        // empty values shall not be saved
+        if (StringUtils.isBlank(value)){
+            return;
+        }
+        
+        // if existing values shall not be created again
+        if (skipIfExistsAlready) {
+            List<Processproperty> pps = PropertyManager.getProcessPropertiesForProcess(processId);
+            for (Processproperty p : pps) {
+                if (p.getTitel().equals(name)) {
+                    return;
+                }
+            }
+        }
+        
+        // create (new) property
+        Processproperty pp = new Processproperty();
+        Process p = ProcessManager.getProcessById(processId);
+        pp.setProcessId(processId);
+        pp.setTitel(name);
+        pp.setWert(value);
+        PropertyManager.saveProcessProperty(pp);
+    }
+    
 }
