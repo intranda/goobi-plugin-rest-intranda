@@ -73,7 +73,10 @@ public class Emails {
         List<UserProjectConfiguration> configurationList = user.getEmailConfiguration();
         for (UserProjectConfiguration configuration : configurationList) {
             for (StepConfiguration step : configuration.getStepList()) {
-                step.setActivated(false);
+                step.setDone(false);
+                step.setError(false);
+                step.setInWork(false);
+                step.setOpen(false);
             }
         }
         try {
@@ -127,7 +130,10 @@ public class Emails {
         for (UserProjectConfiguration configuration : configurationList) {
             for (StepConfiguration sc : configuration.getStepList()) {
                 if (sc.getStepName().equals(step)) {
-                    sc.setActivated(false);
+                    sc.setDone(false);
+                    sc.setError(false);
+                    sc.setInWork(false);
+                    sc.setOpen(false);
                 }
             }
         }
@@ -181,7 +187,10 @@ public class Emails {
         for (UserProjectConfiguration configuration : configurationList) {
             if (configuration.getProjectName().equals(project)) {
                 for (StepConfiguration step : configuration.getStepList()) {
-                    step.setActivated(false);
+                    step.setDone(false);
+                    step.setError(false);
+                    step.setInWork(false);
+                    step.setOpen(false);
                 }
             }
         }
