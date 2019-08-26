@@ -3,7 +3,7 @@ package org.goobi.api.rest;
 /**
  * This file is part of a plugin for the Goobi Application - a Workflow tool for the support of mass digitization.
  * 
- * Visit the websites for more information. 
+ * Visit the websites for more information.
  *          - https://goobi.io
  *          - https://www.intranda.com
  *          - https://github.com/intranda/goobi
@@ -46,6 +46,7 @@ import org.goobi.api.db.RestDbHelper;
 import org.goobi.api.rest.model.RestProcess;
 import org.goobi.api.rest.request.AddProcessMetadataReq;
 import org.goobi.api.rest.request.DeleteProcessMetadataReq;
+import org.goobi.api.rest.request.ProcessCreationRequest;
 import org.goobi.api.rest.request.SearchGroup;
 import org.goobi.api.rest.request.SearchQuery;
 import org.goobi.api.rest.request.SearchQuery.RelationalOperator;
@@ -71,10 +72,17 @@ public class Processes {
 
     // TODO: really create process here
     @POST
-    @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public CreationResponse createProcess() {
+    public CreationResponse createProcess(ProcessCreationRequest req) {
         System.out.println("create process");
+
+        System.out.println(req.getDocstruct());
+
+        //        for ()
+
+
+
+
         CreationResponse resp = new CreationResponse();
         resp.setProcessId(123456);
         resp.setProcessName("blafasel");
