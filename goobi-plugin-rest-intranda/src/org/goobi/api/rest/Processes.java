@@ -29,6 +29,7 @@ import java.io.IOException;
 import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
@@ -59,29 +60,103 @@ import org.goobi.beans.Process;
 import org.goobi.beans.Processproperty;
 import org.goobi.beans.Step;
 
+import de.sub.goobi.helper.BeanHelper;
 import de.sub.goobi.helper.exceptions.DAOException;
 import de.sub.goobi.helper.exceptions.SwapException;
 import de.sub.goobi.persistence.managers.ProcessManager;
 import de.sub.goobi.persistence.managers.PropertyManager;
+import ugh.dl.DigitalDocument;
+import ugh.dl.DocStruct;
+import ugh.dl.Fileformat;
+import ugh.dl.Metadata;
+import ugh.dl.MetadataType;
+import ugh.dl.Prefs;
+import ugh.exceptions.MetadataTypeNotAllowedException;
 import ugh.exceptions.PreferencesException;
 import ugh.exceptions.ReadException;
+import ugh.exceptions.TypeNotAllowedForParentException;
 import ugh.exceptions.WriteException;
+import ugh.fileformats.mets.MetsMods;
 
 @Path("/processes")
+@Produces(MediaType.APPLICATION_JSON)
 public class Processes {
 
-    // TODO: really create process here
     @POST
-    @Produces(MediaType.APPLICATION_JSON)
+    @Consumes(MediaType.APPLICATION_JSON)
     public CreationResponse createProcess(ProcessCreationRequest req) {
         System.out.println("create process");
 
-        System.out.println(req.getDocstruct());
+        Process p = ProcessManager.getProcessByTitle(req.getProcesstitle());
+        if (p != null) {
+            //TODO abort and send error message
+        }
+        Process template = null;
+        if (req.getTemplateId() != null) {
+            template = ProcessManager.getProcessById(req.getTemplateId());
+        } else if (req.getTemplateName() != null) {
+            template = ProcessManager.getProcessByExactTitle(req.getTemplateName());
+        }
+        if (template == null) {
+            //TODO: return error message
+        }
 
-        //        for ()
+        p = cloneTemplate(template);
 
+        /**
+         * handle metadata stuff
+         */
+        Prefs prefs = null;
+        Fileformat fileformat = null;
+        try {
+            prefs = template.getRegelsatz().getPreferences();
+            fileformat = new MetsMods(prefs);
+        } catch (PreferencesException e) {
+            // TODO send error message with exception as detail-message
+            e.printStackTrace();
+        }
+        DigitalDocument digDoc = new DigitalDocument();
+        fileformat.setDigitalDocument(digDoc);
+        DocStruct logicalDs = null;
+        try {
+            logicalDs = digDoc.createDocStruct(prefs.getDocStrctTypeByName(req.getLogicalDocStruct()));
+            DocStruct physical = digDoc.createDocStruct(prefs.getDocStrctTypeByName(req.getPhysicalDocStruct()));
+            digDoc.setLogicalDocStruct(logicalDs);
+            digDoc.setPhysicalDocStruct(physical);
+        } catch (TypeNotAllowedForParentException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+        if (req.getMetadata() != null) {
+            Map<String, String> metadata = req.getMetadata();
+            for (String key : metadata.keySet()) {
+                // add metadata to new process
+                MetadataType mdt = prefs.getMetadataTypeByName(key);
+                if (mdt == null) {
+                    //TODO: another good errormessage and return;
+                }
+                Metadata md;
+                try {
+                    md = new Metadata(mdt);
+                    md.setValue(metadata.get(key));
+                    logicalDs.addMetadata(md);
+                } catch (MetadataTypeNotAllowedException e) {
+                    //TODO: send good error message and return
+                    e.printStackTrace();
+                }
+            }
+        }
 
-
+        if (req.getProperties() != null) {
+            for (String key : req.getProperties().keySet()) {
+                // add properties
+                Processproperty pp = new Processproperty();
+                pp.setProzess(p);
+                pp.setTitel(key);
+                pp.setWert(req.getProperties().get(key));
+                PropertyManager.saveProcessProperty(pp);
+            }
+        }
 
         CreationResponse resp = new CreationResponse();
         resp.setProcessId(123456);
@@ -91,7 +166,6 @@ public class Processes {
 
     @GET
     @Path("/search")
-    @Produces(MediaType.APPLICATION_JSON)
     public List<RestProcess> simpleSearch(@QueryParam("field") String field, @QueryParam("value") String value, @QueryParam("limit") int limit,
             @QueryParam("offset") int offset, @QueryParam("orderby") String sortField, @QueryParam("descending") boolean sortDescending,
             @QueryParam("filterProjects") String filterProjects) throws SQLException {
@@ -114,7 +188,6 @@ public class Processes {
     @POST
     @Path("/search")
     @Consumes(MediaType.APPLICATION_JSON)
-    @Produces(MediaType.APPLICATION_JSON)
     public List<RestProcess> advancedSearch(SearchRequest sr) throws SQLException {
         return sr.search();
     }
@@ -122,7 +195,6 @@ public class Processes {
     @DELETE
     @Path("/{id}/metadata")
     @Consumes(MediaType.APPLICATION_JSON)
-    @Produces(MediaType.APPLICATION_JSON)
     public UpdateMetadataResponse deleteMetadata(@PathParam("id") int processId, DeleteProcessMetadataReq req)
             throws ReadException, PreferencesException, WriteException, IOException, InterruptedException, SwapException, DAOException {
         Process p = ProcessManager.getProcessById(processId);
@@ -132,7 +204,6 @@ public class Processes {
     @POST
     @Path("/{id}/metadata")
     @Consumes(MediaType.APPLICATION_JSON)
-    @Produces(MediaType.APPLICATION_JSON)
     public UpdateMetadataResponse addMetadata(@PathParam("id") int processId, AddProcessMetadataReq req)
             throws ReadException, PreferencesException, WriteException, IOException, InterruptedException, SwapException, DAOException {
         Process p = ProcessManager.getProcessById(processId);
@@ -142,7 +213,6 @@ public class Processes {
     @PUT
     @Path("/{id}/properties/{name}")
     @Consumes(MediaType.APPLICATION_JSON)
-    @Produces(MediaType.APPLICATION_JSON)
     public Response updateProcessProperty(@PathParam("id") int processId, @PathParam("name") String name, String newValue) {
         List<Processproperty> pps = PropertyManager.getProcessPropertiesForProcess(processId);
         Processproperty pp = null;
@@ -165,7 +235,6 @@ public class Processes {
 
     @Path("/ppns/{ppn}/status")
     @GET
-    @Produces(MediaType.APPLICATION_JSON)
     public Response getProcessStatusForPPNAsJson(@PathParam("ppn") String ppn) {
         Response response = null;
 
@@ -212,6 +281,24 @@ public class Processes {
             sr.setTitle(step.getTitel());
             sr.setOrder(step.getReihenfolge());
         }
+    }
+
+    private Process cloneTemplate(Process template) {
+        Process process = new Process();
+
+        process.setIstTemplate(false);
+        process.setInAuswahllisteAnzeigen(false);
+        process.setProjekt(template.getProjekt());
+        process.setRegelsatz(template.getRegelsatz());
+        process.setDocket(template.getDocket());
+
+        BeanHelper bHelper = new BeanHelper();
+        bHelper.SchritteKopieren(template, process);
+        bHelper.ScanvorlagenKopieren(template, process);
+        bHelper.WerkstueckeKopieren(template, process);
+        bHelper.EigenschaftenKopieren(template, process);
+
+        return process;
     }
 
 }

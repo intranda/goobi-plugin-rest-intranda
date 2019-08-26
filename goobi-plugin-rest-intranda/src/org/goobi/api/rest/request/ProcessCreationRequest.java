@@ -1,7 +1,6 @@
 package org.goobi.api.rest.request;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Map;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
@@ -18,44 +17,43 @@ public class ProcessCreationRequest {
 
     private String identifier;
     private String processtitle;
-    private String docstruct;
+    private String logicalDocStruct;
+    private String physicalDocStruct;
+    private Integer templateId;
+    private String templateName;
 
     @XmlElementWrapper
     @XmlElement(name = "metadata")
-    private List<ProcessCreationElement> metadataList = new ArrayList<>();
-
+    private Map<String, String> metadata;
 
     @XmlElementWrapper
     @XmlElement(name = "property")
-    private List<ProcessCreationElement> propertyList = new ArrayList<>();
-
-
-
+    private Map<String, String> properties;
 
     /*
-
-<?xml version="1.0"?>
-<record>
+    
+    <?xml version="1.0"?>
+    <record>
      <identifier>PPN1234567</identifier>
      <processtitle>foobar_XYZ_PPN1234567</processtitle>
      <docstruct>Monograph</docstruct>
-
-   <metadataList>
+    
+    <metadataList>
      <metadata name="TitleDocMain" value="Lorem Ipsum dolor sit
-amet" />
+    amet" />
      <metadata name="Author" value="Mustermann, Max" />
      <metadata name="PublicationYear" value="1984" />
      <metadata name="DocLanguage" value="ger" />
      <metadata name="DocLanguage" value="lat" />
      <metadata name="shelfmarksource" value="SHLF98A2" />
-   </metadataList>
-
-   <propertyList>
+    </metadataList>
+    
+    <propertyList>
      <property name="OCR" value="Fraktur" />
-   </propertyList>
-</record>
-
-
+    </propertyList>
+    </record>
+    
+    
      */
 
 }
