@@ -43,6 +43,7 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
+import org.apache.commons.lang3.StringUtils;
 import org.goobi.api.db.RestDbHelper;
 import org.goobi.api.rest.model.RestProcess;
 import org.goobi.api.rest.request.AddProcessMetadataReq;
@@ -65,6 +66,7 @@ import de.sub.goobi.helper.exceptions.DAOException;
 import de.sub.goobi.helper.exceptions.SwapException;
 import de.sub.goobi.persistence.managers.ProcessManager;
 import de.sub.goobi.persistence.managers.PropertyManager;
+import lombok.extern.log4j.Log4j;
 import ugh.dl.DigitalDocument;
 import ugh.dl.DocStruct;
 import ugh.dl.Fileformat;
@@ -78,18 +80,45 @@ import ugh.exceptions.TypeNotAllowedForParentException;
 import ugh.exceptions.WriteException;
 import ugh.fileformats.mets.MetsMods;
 
+@Log4j
 @Path("/processes")
 @Produces(MediaType.APPLICATION_JSON)
 public class Processes {
 
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
-    public CreationResponse createProcess(ProcessCreationRequest req) {
+    public Response createProcess(ProcessCreationRequest req) {
         System.out.println("create process");
+
+        if (StringUtils.isBlank(req.getProcesstitle())) {
+            // abort and send error message
+            CreationResponse resp = new CreationResponse();
+            resp.setResult("error");
+            resp.setErrorText("processtitle may not be blank");
+            return Response.status(400).entity(resp).build();
+        }
+        if (StringUtils.isBlank(req.getIdentifier())) {
+            // abort and send error message
+            CreationResponse resp = new CreationResponse();
+            resp.setResult("error");
+            resp.setErrorText("identifier may not be blank");
+            return Response.status(400).entity(resp).build();
+        }
+        if (StringUtils.isBlank(req.getTemplateName()) && req.getTemplateId() == null) {
+            // abort and send error message
+            CreationResponse resp = new CreationResponse();
+            resp.setResult("error");
+            resp.setErrorText("templateName or templateId are mandatory");
+            return Response.status(400).entity(resp).build();
+        }
 
         Process p = ProcessManager.getProcessByTitle(req.getProcesstitle());
         if (p != null) {
-            //TODO abort and send error message
+            // abort and send error message
+            CreationResponse resp = new CreationResponse();
+            resp.setResult("error");
+            resp.setErrorText(String.format("Process with title \"%s\" is already present in Goobi", req.getProcesstitle()));
+            return Response.status(409).entity(resp).build();
         }
         Process template = null;
         if (req.getTemplateId() != null) {
@@ -98,10 +127,26 @@ public class Processes {
             template = ProcessManager.getProcessByExactTitle(req.getTemplateName());
         }
         if (template == null) {
-            //TODO: return error message
+            // return error message
+            CreationResponse resp = new CreationResponse();
+            resp.setResult("error");
+            resp.setErrorText("Could not find template with provided templateId or templateName");
+            return Response.status(404).entity(resp).build();
         }
 
         p = cloneTemplate(template);
+        p.setTitel(req.getProcesstitle());
+
+        try {
+            ProcessManager.saveProcess(p);
+        } catch (DAOException e1) {
+            // send 500 and error message
+            log.error(e1);
+            CreationResponse resp = new CreationResponse();
+            resp.setResult("error");
+            resp.setErrorText("Could not save process to database.");
+            return Response.status(500).entity(resp).build();
+        }
 
         /**
          * handle metadata stuff
@@ -113,19 +158,28 @@ public class Processes {
             fileformat = new MetsMods(prefs);
         } catch (PreferencesException e) {
             // TODO send error message with exception as detail-message
-            e.printStackTrace();
+            log.error(e);
+            CreationResponse resp = new CreationResponse();
+            resp.setResult("error");
+            resp.setErrorText("Could not read metadata ruleset");
+            return Response.status(500).entity(resp).build();
         }
         DigitalDocument digDoc = new DigitalDocument();
         fileformat.setDigitalDocument(digDoc);
         DocStruct logicalDs = null;
         try {
             logicalDs = digDoc.createDocStruct(prefs.getDocStrctTypeByName(req.getLogicalDocStruct()));
+            Metadata idMd = new Metadata(prefs.getMetadataTypeByName("CatalogIDDigital"));
+            idMd.setValue(req.getIdentifier());
             DocStruct physical = digDoc.createDocStruct(prefs.getDocStrctTypeByName(req.getPhysicalDocStruct()));
             digDoc.setLogicalDocStruct(logicalDs);
             digDoc.setPhysicalDocStruct(physical);
-        } catch (TypeNotAllowedForParentException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+        } catch (TypeNotAllowedForParentException | MetadataTypeNotAllowedException e) {
+            log.error(e);
+            CreationResponse resp = new CreationResponse();
+            resp.setResult("error");
+            resp.setErrorText("Error creating logical or physical DocStruct.");
+            return Response.status(500).entity(resp).build();
         }
         if (req.getMetadata() != null) {
             Map<String, String> metadata = req.getMetadata();
@@ -133,7 +187,11 @@ public class Processes {
                 // add metadata to new process
                 MetadataType mdt = prefs.getMetadataTypeByName(key);
                 if (mdt == null) {
-                    //TODO: another good errormessage and return;
+                    // another good errormessage and return;
+                    CreationResponse resp = new CreationResponse();
+                    resp.setResult("error");
+                    resp.setErrorText(String.format("Could not find MetadataType for \"%s\" in ruleset.", key));
+                    return Response.status(422).entity(resp).build();
                 }
                 Metadata md;
                 try {
@@ -141,8 +199,12 @@ public class Processes {
                     md.setValue(metadata.get(key));
                     logicalDs.addMetadata(md);
                 } catch (MetadataTypeNotAllowedException e) {
-                    //TODO: send good error message and return
-                    e.printStackTrace();
+                    // send good error message and return
+                    log.error(e);
+                    CreationResponse resp = new CreationResponse();
+                    resp.setResult("error");
+                    resp.setErrorText(String.format("MetadataType \"%s\" not allowed in logical DocStruct.", key));
+                    return Response.status(422).entity(resp).build();
                 }
             }
         }
@@ -159,9 +221,9 @@ public class Processes {
         }
 
         CreationResponse resp = new CreationResponse();
-        resp.setProcessId(123456);
-        resp.setProcessName("blafasel");
-        return resp;
+        resp.setProcessId(p.getId());
+        resp.setProcessName(p.getTitel());
+        return Response.ok(resp).build();
     }
 
     @GET
