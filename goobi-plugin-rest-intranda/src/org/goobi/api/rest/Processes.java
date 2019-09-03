@@ -94,7 +94,6 @@ public class Processes {
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
     public Response createProcess(ProcessCreationRequest req) {
-        System.out.println("create process");
 
         /**
          * START check if all parameters are fine
@@ -111,6 +110,13 @@ public class Processes {
             CreationResponse resp = new CreationResponse();
             resp.setResult("error");
             resp.setErrorText("templateName or templateId are mandatory");
+            return Response.status(400).entity(resp).build();
+        }
+        boolean useOpac = req.getOpacConfig() != null;
+        if (!useOpac && StringUtils.isBlank(req.getLogicalDSType())) {
+            CreationResponse resp = new CreationResponse();
+            resp.setResult("error");
+            resp.setErrorText("when not getting metadata from the catalogue, \"logicaDSType\" is mandatory");
             return Response.status(400).entity(resp).build();
         }
         String processTitle = StringUtils.isBlank(req.getProcesstitle()) ? req.getIdentifier() : req.getProcesstitle();
@@ -146,23 +152,11 @@ public class Processes {
         p = cloneTemplate(template);
         p.setTitel(processTitle);
 
-        try {
-            ProcessManager.saveProcess(p);
-        } catch (DAOException e1) {
-            // send 500 and error message
-            log.error(e1);
-            CreationResponse resp = new CreationResponse();
-            resp.setResult("error");
-            resp.setErrorText("Could not save process to database.");
-            return Response.status(500).entity(resp).build();
-        }
-
         /**
          * handle metadata stuff
          */
         Prefs prefs = null;
         Fileformat fileformat = null;
-        boolean useOpac = req.getOpacConfig() != null;
         try {
             prefs = template.getRegelsatz().getPreferences();
             if (useOpac) {
@@ -203,13 +197,13 @@ public class Processes {
             if (useOpac) {
                 logicalDs = digDoc.getLogicalDocStruct();
             } else {
-                logicalDs = digDoc.createDocStruct(prefs.getDocStrctTypeByName(req.getLogicalDocStruct()));
+                logicalDs = digDoc.createDocStruct(prefs.getDocStrctTypeByName(req.getLogicalDSType()));
                 Metadata idMd = new Metadata(prefs.getMetadataTypeByName("CatalogIDDigital"));
                 idMd.setValue(req.getIdentifier());
                 digDoc.setLogicalDocStruct(logicalDs);
             }
             if (digDoc.getPhysicalDocStruct() == null) {
-                DocStruct physical = digDoc.createDocStruct(prefs.getDocStrctTypeByName(req.getPhysicalDocStruct()));
+                DocStruct physical = digDoc.createDocStruct(prefs.getDocStrctTypeByName("BoundBook"));
                 digDoc.setPhysicalDocStruct(physical);
             }
         } catch (TypeNotAllowedForParentException | MetadataTypeNotAllowedException e) {
@@ -247,6 +241,16 @@ public class Processes {
             }
         }
 
+        try {
+            ProcessManager.saveProcess(p);
+        } catch (DAOException e1) {
+            // send 500 and error message
+            log.error(e1);
+            CreationResponse resp = new CreationResponse();
+            resp.setResult("error");
+            resp.setErrorText("Could not save process to database.");
+            return Response.status(500).entity(resp).build();
+        }
         if (req.getProperties() != null) {
             for (String key : req.getProperties().keySet()) {
                 // add properties

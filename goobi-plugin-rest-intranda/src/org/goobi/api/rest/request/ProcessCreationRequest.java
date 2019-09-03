@@ -17,8 +17,7 @@ public class ProcessCreationRequest {
 
     private String identifier;
     private String processtitle;
-    private String logicalDocStruct;
-    private String physicalDocStruct;
+    private String logicalDSType;
     private Integer templateId;
     private String templateName;
 
