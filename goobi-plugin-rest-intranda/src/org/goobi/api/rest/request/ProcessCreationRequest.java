@@ -22,6 +22,8 @@ public class ProcessCreationRequest {
     private Integer templateId;
     private String templateName;
 
+    private OpacConfig opacConfig;
+
     @XmlElementWrapper
     @XmlElement(name = "metadata")
     private Map<String, String> metadata;

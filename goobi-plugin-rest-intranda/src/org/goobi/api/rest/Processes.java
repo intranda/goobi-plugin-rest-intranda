@@ -60,12 +60,18 @@ import org.goobi.api.rest.response.UpdateMetadataResponse;
 import org.goobi.beans.Process;
 import org.goobi.beans.Processproperty;
 import org.goobi.beans.Step;
+import org.goobi.production.enums.PluginType;
+import org.goobi.production.plugin.PluginLoader;
+import org.goobi.production.plugin.interfaces.IOpacPlugin;
 
 import de.sub.goobi.helper.BeanHelper;
 import de.sub.goobi.helper.exceptions.DAOException;
+import de.sub.goobi.helper.exceptions.ImportPluginException;
 import de.sub.goobi.helper.exceptions.SwapException;
 import de.sub.goobi.persistence.managers.ProcessManager;
 import de.sub.goobi.persistence.managers.PropertyManager;
+import de.unigoettingen.sub.search.opac.ConfigOpac;
+import de.unigoettingen.sub.search.opac.ConfigOpacCatalogue;
 import lombok.extern.log4j.Log4j;
 import ugh.dl.DigitalDocument;
 import ugh.dl.DocStruct;
@@ -90,13 +96,9 @@ public class Processes {
     public Response createProcess(ProcessCreationRequest req) {
         System.out.println("create process");
 
-        if (StringUtils.isBlank(req.getProcesstitle())) {
-            // abort and send error message
-            CreationResponse resp = new CreationResponse();
-            resp.setResult("error");
-            resp.setErrorText("processtitle may not be blank");
-            return Response.status(400).entity(resp).build();
-        }
+        /**
+         * START check if all parameters are fine
+         */
         if (StringUtils.isBlank(req.getIdentifier())) {
             // abort and send error message
             CreationResponse resp = new CreationResponse();
@@ -111,15 +113,22 @@ public class Processes {
             resp.setErrorText("templateName or templateId are mandatory");
             return Response.status(400).entity(resp).build();
         }
-
-        Process p = ProcessManager.getProcessByTitle(req.getProcesstitle());
+        String processTitle = StringUtils.isBlank(req.getProcesstitle()) ? req.getIdentifier() : req.getProcesstitle();
+        Process p = ProcessManager.getProcessByTitle(processTitle);
         if (p != null) {
             // abort and send error message
             CreationResponse resp = new CreationResponse();
             resp.setResult("error");
-            resp.setErrorText(String.format("Process with title \"%s\" is already present in Goobi", req.getProcesstitle()));
+            resp.setErrorText(String.format("Process with title \"%s\" is already present in Goobi", processTitle));
             return Response.status(409).entity(resp).build();
         }
+        /**
+         * END check if all parameters are fine
+         */
+
+        /**
+         * START creating the process
+         */
         Process template = null;
         if (req.getTemplateId() != null) {
             template = ProcessManager.getProcessById(req.getTemplateId());
@@ -135,7 +144,7 @@ public class Processes {
         }
 
         p = cloneTemplate(template);
-        p.setTitel(req.getProcesstitle());
+        p.setTitel(processTitle);
 
         try {
             ProcessManager.saveProcess(p);
@@ -153,27 +162,56 @@ public class Processes {
          */
         Prefs prefs = null;
         Fileformat fileformat = null;
+        boolean useOpac = req.getOpacConfig() != null;
         try {
             prefs = template.getRegelsatz().getPreferences();
-            fileformat = new MetsMods(prefs);
+            if (useOpac) {
+                fileformat =
+                        getRecordFromCatalogue(prefs, req.getIdentifier(), req.getOpacConfig().getOpacName(), req.getOpacConfig().getSearchField());
+            } else {
+                fileformat = new MetsMods(prefs);
+            }
         } catch (PreferencesException e) {
-            // TODO send error message with exception as detail-message
+            // send error message 
             log.error(e);
             CreationResponse resp = new CreationResponse();
             resp.setResult("error");
             resp.setErrorText("Could not read metadata ruleset");
             return Response.status(500).entity(resp).build();
+        } catch (ImportPluginException e) {
+            log.error(e);
+            CreationResponse resp = new CreationResponse();
+            resp.setResult("error");
+            resp.setErrorText(e.getMessage());
+            return Response.status(500).entity(resp).build();
         }
-        DigitalDocument digDoc = new DigitalDocument();
-        fileformat.setDigitalDocument(digDoc);
+        DigitalDocument digDoc;
+        if (useOpac) {
+            try {
+                digDoc = fileformat.getDigitalDocument();
+            } catch (PreferencesException e) {
+                // TODO Auto-generated catch block
+                log.error(e);
+                return null;
+            }
+        } else {
+            digDoc = new DigitalDocument();
+            fileformat.setDigitalDocument(digDoc);
+        }
         DocStruct logicalDs = null;
         try {
-            logicalDs = digDoc.createDocStruct(prefs.getDocStrctTypeByName(req.getLogicalDocStruct()));
-            Metadata idMd = new Metadata(prefs.getMetadataTypeByName("CatalogIDDigital"));
-            idMd.setValue(req.getIdentifier());
-            DocStruct physical = digDoc.createDocStruct(prefs.getDocStrctTypeByName(req.getPhysicalDocStruct()));
-            digDoc.setLogicalDocStruct(logicalDs);
-            digDoc.setPhysicalDocStruct(physical);
+            if (useOpac) {
+                logicalDs = digDoc.getLogicalDocStruct();
+            } else {
+                logicalDs = digDoc.createDocStruct(prefs.getDocStrctTypeByName(req.getLogicalDocStruct()));
+                Metadata idMd = new Metadata(prefs.getMetadataTypeByName("CatalogIDDigital"));
+                idMd.setValue(req.getIdentifier());
+                digDoc.setLogicalDocStruct(logicalDs);
+            }
+            if (digDoc.getPhysicalDocStruct() == null) {
+                DocStruct physical = digDoc.createDocStruct(prefs.getDocStrctTypeByName(req.getPhysicalDocStruct()));
+                digDoc.setPhysicalDocStruct(physical);
+            }
         } catch (TypeNotAllowedForParentException | MetadataTypeNotAllowedException e) {
             log.error(e);
             CreationResponse resp = new CreationResponse();
@@ -219,8 +257,21 @@ public class Processes {
                 PropertyManager.saveProcessProperty(pp);
             }
         }
+        try {
+            p.writeMetadataFile(fileformat);
+        } catch (WriteException | PreferencesException | IOException | InterruptedException | SwapException | DAOException e) {
+            log.error(e);
+            CreationResponse resp = new CreationResponse();
+            resp.setResult("error");
+            resp.setErrorText("Error saving metadata file.");
+            return Response.status(500).entity(resp).build();
+        }
+        /**
+         * END creating the process
+         */
 
         CreationResponse resp = new CreationResponse();
+        resp.setResult("success");
         resp.setProcessId(p.getId());
         resp.setProcessName(p.getTitel());
         return Response.ok(resp).build();
@@ -361,6 +412,46 @@ public class Processes {
         bHelper.EigenschaftenKopieren(template, process);
 
         return process;
+    }
+
+    private Fileformat getRecordFromCatalogue(Prefs prefs, String identifier, String opacName, String searchField) throws ImportPluginException {
+        ConfigOpacCatalogue coc = ConfigOpac.getInstance().getCatalogueByName(opacName);
+        if (coc == null) {
+            throw new ImportPluginException("Catalogue with name " + opacName + " not found. Please check goobi_opac.xml");
+        }
+        IOpacPlugin myImportOpac = (IOpacPlugin) PluginLoader.getPluginByTitle(PluginType.Opac, coc.getOpacType());
+        if (myImportOpac == null) {
+            throw new ImportPluginException("Opac plugin " + coc.getOpacType() + " not found. Abort.");
+        }
+        Fileformat myRdf = null;
+        try {
+            myRdf = myImportOpac.search(searchField, identifier, coc, prefs);
+            if (myRdf == null) {
+                throw new ImportPluginException("Could not import record " + identifier
+                        + ". Usually this means a ruleset mapping is not correct or the record can not be found in the catalogue.");
+            }
+        } catch (Exception e1) {
+            throw new ImportPluginException("Could not import record " + identifier
+                    + ". Usually this means a ruleset mapping is not correct or the record can not be found in the catalogue.");
+        }
+        DocStruct ds = null;
+        DocStruct anchor = null;
+        try {
+            ds = myRdf.getDigitalDocument().getLogicalDocStruct();
+            if (ds.getType().isAnchor()) {
+                anchor = ds;
+                if (ds.getAllChildren() == null || ds.getAllChildren().isEmpty()) {
+                    throw new ImportPluginException(
+                            "Could not import record " + identifier + ". Found anchor file, but no children. Try to import the child record.");
+                }
+                ds = ds.getAllChildren().get(0);
+            }
+        } catch (PreferencesException e1) {
+            throw new ImportPluginException("Could not import record " + identifier
+                    + ". Usually this means a ruleset mapping is not correct or the record can not be found in the catalogue.");
+        }
+
+        return myRdf;
     }
 
 }
