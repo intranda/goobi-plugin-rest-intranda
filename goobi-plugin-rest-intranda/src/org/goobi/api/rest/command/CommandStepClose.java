@@ -46,7 +46,7 @@ import org.goobi.production.plugin.PluginLoader;
 import org.goobi.production.plugin.interfaces.IValidatorPlugin;
 
 import de.sub.goobi.config.ConfigurationHelper;
-import de.sub.goobi.helper.CloseStepHelper;
+import de.sub.goobi.helper.HelperSchritte;
 import de.sub.goobi.helper.ShellScript;
 import de.sub.goobi.helper.enums.StepStatus;
 import de.sub.goobi.persistence.managers.ProcessManager;
@@ -183,10 +183,8 @@ public class CommandStepClose {
         }
 
         if (status.equals(Response.Status.OK)) {
-            CloseStepHelper.closeStep(so, null);
-            
-//            HelperSchritte hs = new HelperSchritte();
-//            hs.CloseStepObjectAutomatic(so);
+            HelperSchritte hs = new HelperSchritte();
+            hs.CloseStepObjectAutomatic(so);
             log.debug("step closed");
         }
         cr.setComment(message);
