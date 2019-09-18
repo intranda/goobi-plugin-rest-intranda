@@ -3,7 +3,7 @@ package org.goobi.api.rest;
 /**
  * This file is part of a plugin for the Goobi Application - a Workflow tool for the support of mass digitization.
  * 
- * Visit the websites for more information. 
+ * Visit the websites for more information.
  *          - https://goobi.io
  *          - https://www.intranda.com
  *          - https://github.com/intranda/goobi
@@ -29,6 +29,7 @@ import java.io.IOException;
 import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
@@ -42,10 +43,12 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
+import org.apache.commons.lang3.StringUtils;
 import org.goobi.api.db.RestDbHelper;
 import org.goobi.api.rest.model.RestProcess;
 import org.goobi.api.rest.request.AddProcessMetadataReq;
 import org.goobi.api.rest.request.DeleteProcessMetadataReq;
+import org.goobi.api.rest.request.ProcessCreationRequest;
 import org.goobi.api.rest.request.SearchGroup;
 import org.goobi.api.rest.request.SearchQuery;
 import org.goobi.api.rest.request.SearchQuery.RelationalOperator;
@@ -57,33 +60,229 @@ import org.goobi.api.rest.response.UpdateMetadataResponse;
 import org.goobi.beans.Process;
 import org.goobi.beans.Processproperty;
 import org.goobi.beans.Step;
+import org.goobi.production.enums.PluginType;
+import org.goobi.production.plugin.PluginLoader;
+import org.goobi.production.plugin.interfaces.IOpacPlugin;
 
+import de.sub.goobi.helper.BeanHelper;
 import de.sub.goobi.helper.exceptions.DAOException;
+import de.sub.goobi.helper.exceptions.ImportPluginException;
 import de.sub.goobi.helper.exceptions.SwapException;
 import de.sub.goobi.persistence.managers.ProcessManager;
 import de.sub.goobi.persistence.managers.PropertyManager;
+import de.unigoettingen.sub.search.opac.ConfigOpac;
+import de.unigoettingen.sub.search.opac.ConfigOpacCatalogue;
+import lombok.extern.log4j.Log4j;
+import ugh.dl.DigitalDocument;
+import ugh.dl.DocStruct;
+import ugh.dl.Fileformat;
+import ugh.dl.Metadata;
+import ugh.dl.MetadataType;
+import ugh.dl.Prefs;
+import ugh.exceptions.MetadataTypeNotAllowedException;
 import ugh.exceptions.PreferencesException;
 import ugh.exceptions.ReadException;
+import ugh.exceptions.TypeNotAllowedForParentException;
 import ugh.exceptions.WriteException;
+import ugh.fileformats.mets.MetsMods;
 
+@Log4j
 @Path("/processes")
+@Produces(MediaType.APPLICATION_JSON)
 public class Processes {
 
-    // TODO: really create process here
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
-    @Produces(MediaType.APPLICATION_JSON)
-    public CreationResponse createProcess() {
-        System.out.println("create process");
+    public Response createProcess(ProcessCreationRequest req) {
+
+        /**
+         * START check if all parameters are fine
+         */
+        if (StringUtils.isBlank(req.getIdentifier())) {
+            // abort and send error message
+            CreationResponse resp = new CreationResponse();
+            resp.setResult("error");
+            resp.setErrorText("identifier may not be blank");
+            return Response.status(400).entity(resp).build();
+        }
+        if (StringUtils.isBlank(req.getTemplateName()) && req.getTemplateId() == null) {
+            // abort and send error message
+            CreationResponse resp = new CreationResponse();
+            resp.setResult("error");
+            resp.setErrorText("templateName or templateId are mandatory");
+            return Response.status(400).entity(resp).build();
+        }
+        boolean useOpac = req.getOpacConfig() != null;
+        if (!useOpac && StringUtils.isBlank(req.getLogicalDSType())) {
+            CreationResponse resp = new CreationResponse();
+            resp.setResult("error");
+            resp.setErrorText("when not getting metadata from the catalogue, \"logicaDSType\" is mandatory");
+            return Response.status(400).entity(resp).build();
+        }
+        String processTitle = StringUtils.isBlank(req.getProcesstitle()) ? req.getIdentifier() : req.getProcesstitle();
+        Process p = ProcessManager.getProcessByTitle(processTitle);
+        if (p != null) {
+            // abort and send error message
+            CreationResponse resp = new CreationResponse();
+            resp.setResult("error");
+            resp.setErrorText(String.format("Process with title \"%s\" is already present in Goobi", processTitle));
+            return Response.status(409).entity(resp).build();
+        }
+        /**
+         * END check if all parameters are fine
+         */
+
+        /**
+         * START creating the process
+         */
+        Process template = null;
+        if (req.getTemplateId() != null) {
+            template = ProcessManager.getProcessById(req.getTemplateId());
+        } else if (req.getTemplateName() != null) {
+            template = ProcessManager.getProcessByExactTitle(req.getTemplateName());
+        }
+        if (template == null) {
+            // return error message
+            CreationResponse resp = new CreationResponse();
+            resp.setResult("error");
+            resp.setErrorText("Could not find template with provided templateId or templateName");
+            return Response.status(404).entity(resp).build();
+        }
+
+        p = cloneTemplate(template);
+        p.setTitel(processTitle);
+
+        /**
+         * handle metadata stuff
+         */
+        Prefs prefs = null;
+        Fileformat fileformat = null;
+        try {
+            prefs = template.getRegelsatz().getPreferences();
+            if (useOpac) {
+                fileformat =
+                        getRecordFromCatalogue(prefs, req.getIdentifier(), req.getOpacConfig().getOpacName(), req.getOpacConfig().getSearchField());
+            } else {
+                fileformat = new MetsMods(prefs);
+            }
+        } catch (PreferencesException e) {
+            // send error message 
+            log.error(e);
+            CreationResponse resp = new CreationResponse();
+            resp.setResult("error");
+            resp.setErrorText("Could not read metadata ruleset");
+            return Response.status(500).entity(resp).build();
+        } catch (ImportPluginException e) {
+            log.error(e);
+            CreationResponse resp = new CreationResponse();
+            resp.setResult("error");
+            resp.setErrorText(e.getMessage());
+            return Response.status(500).entity(resp).build();
+        }
+        DigitalDocument digDoc;
+        if (useOpac) {
+            try {
+                digDoc = fileformat.getDigitalDocument();
+            } catch (PreferencesException e) {
+                // TODO Auto-generated catch block
+                log.error(e);
+                return null;
+            }
+        } else {
+            digDoc = new DigitalDocument();
+            fileformat.setDigitalDocument(digDoc);
+        }
+        DocStruct logicalDs = null;
+        try {
+            if (useOpac) {
+                logicalDs = digDoc.getLogicalDocStruct();
+            } else {
+                logicalDs = digDoc.createDocStruct(prefs.getDocStrctTypeByName(req.getLogicalDSType()));
+                Metadata idMd = new Metadata(prefs.getMetadataTypeByName("CatalogIDDigital"));
+                idMd.setValue(req.getIdentifier());
+                digDoc.setLogicalDocStruct(logicalDs);
+            }
+            if (digDoc.getPhysicalDocStruct() == null) {
+                DocStruct physical = digDoc.createDocStruct(prefs.getDocStrctTypeByName("BoundBook"));
+                digDoc.setPhysicalDocStruct(physical);
+            }
+        } catch (TypeNotAllowedForParentException | MetadataTypeNotAllowedException e) {
+            log.error(e);
+            CreationResponse resp = new CreationResponse();
+            resp.setResult("error");
+            resp.setErrorText("Error creating logical or physical DocStruct.");
+            return Response.status(500).entity(resp).build();
+        }
+        if (req.getMetadata() != null) {
+            Map<String, String> metadata = req.getMetadata();
+            for (String key : metadata.keySet()) {
+                // add metadata to new process
+                MetadataType mdt = prefs.getMetadataTypeByName(key);
+                if (mdt == null) {
+                    // another good errormessage and return;
+                    CreationResponse resp = new CreationResponse();
+                    resp.setResult("error");
+                    resp.setErrorText(String.format("Could not find MetadataType for \"%s\" in ruleset.", key));
+                    return Response.status(422).entity(resp).build();
+                }
+                Metadata md;
+                try {
+                    md = new Metadata(mdt);
+                    md.setValue(metadata.get(key));
+                    logicalDs.addMetadata(md);
+                } catch (MetadataTypeNotAllowedException e) {
+                    // send good error message and return
+                    log.error(e);
+                    CreationResponse resp = new CreationResponse();
+                    resp.setResult("error");
+                    resp.setErrorText(String.format("MetadataType \"%s\" not allowed in logical DocStruct.", key));
+                    return Response.status(422).entity(resp).build();
+                }
+            }
+        }
+
+        try {
+            ProcessManager.saveProcess(p);
+        } catch (DAOException e1) {
+            // send 500 and error message
+            log.error(e1);
+            CreationResponse resp = new CreationResponse();
+            resp.setResult("error");
+            resp.setErrorText("Could not save process to database.");
+            return Response.status(500).entity(resp).build();
+        }
+        if (req.getProperties() != null) {
+            for (String key : req.getProperties().keySet()) {
+                // add properties
+                Processproperty pp = new Processproperty();
+                pp.setProzess(p);
+                pp.setTitel(key);
+                pp.setWert(req.getProperties().get(key));
+                PropertyManager.saveProcessProperty(pp);
+            }
+        }
+        try {
+            p.writeMetadataFile(fileformat);
+        } catch (WriteException | PreferencesException | IOException | InterruptedException | SwapException | DAOException e) {
+            log.error(e);
+            CreationResponse resp = new CreationResponse();
+            resp.setResult("error");
+            resp.setErrorText("Error saving metadata file.");
+            return Response.status(500).entity(resp).build();
+        }
+        /**
+         * END creating the process
+         */
+
         CreationResponse resp = new CreationResponse();
-        resp.setProcessId(123456);
-        resp.setProcessName("blafasel");
-        return resp;
+        resp.setResult("success");
+        resp.setProcessId(p.getId());
+        resp.setProcessName(p.getTitel());
+        return Response.ok(resp).build();
     }
 
     @GET
     @Path("/search")
-    @Produces(MediaType.APPLICATION_JSON)
     public List<RestProcess> simpleSearch(@QueryParam("field") String field, @QueryParam("value") String value, @QueryParam("limit") int limit,
             @QueryParam("offset") int offset, @QueryParam("orderby") String sortField, @QueryParam("descending") boolean sortDescending,
             @QueryParam("filterProjects") String filterProjects) throws SQLException {
@@ -106,7 +305,6 @@ public class Processes {
     @POST
     @Path("/search")
     @Consumes(MediaType.APPLICATION_JSON)
-    @Produces(MediaType.APPLICATION_JSON)
     public List<RestProcess> advancedSearch(SearchRequest sr) throws SQLException {
         return sr.search();
     }
@@ -114,7 +312,6 @@ public class Processes {
     @DELETE
     @Path("/{id}/metadata")
     @Consumes(MediaType.APPLICATION_JSON)
-    @Produces(MediaType.APPLICATION_JSON)
     public UpdateMetadataResponse deleteMetadata(@PathParam("id") int processId, DeleteProcessMetadataReq req)
             throws ReadException, PreferencesException, WriteException, IOException, InterruptedException, SwapException, DAOException {
         Process p = ProcessManager.getProcessById(processId);
@@ -124,7 +321,6 @@ public class Processes {
     @POST
     @Path("/{id}/metadata")
     @Consumes(MediaType.APPLICATION_JSON)
-    @Produces(MediaType.APPLICATION_JSON)
     public UpdateMetadataResponse addMetadata(@PathParam("id") int processId, AddProcessMetadataReq req)
             throws ReadException, PreferencesException, WriteException, IOException, InterruptedException, SwapException, DAOException {
         Process p = ProcessManager.getProcessById(processId);
@@ -134,7 +330,6 @@ public class Processes {
     @PUT
     @Path("/{id}/properties/{name}")
     @Consumes(MediaType.APPLICATION_JSON)
-    @Produces(MediaType.APPLICATION_JSON)
     public Response updateProcessProperty(@PathParam("id") int processId, @PathParam("name") String name, String newValue) {
         List<Processproperty> pps = PropertyManager.getProcessPropertiesForProcess(processId);
         Processproperty pp = null;
@@ -157,7 +352,6 @@ public class Processes {
 
     @Path("/ppns/{ppn}/status")
     @GET
-    @Produces(MediaType.APPLICATION_JSON)
     public Response getProcessStatusForPPNAsJson(@PathParam("ppn") String ppn) {
         Response response = null;
 
@@ -204,6 +398,64 @@ public class Processes {
             sr.setTitle(step.getTitel());
             sr.setOrder(step.getReihenfolge());
         }
+    }
+
+    private Process cloneTemplate(Process template) {
+        Process process = new Process();
+
+        process.setIstTemplate(false);
+        process.setInAuswahllisteAnzeigen(false);
+        process.setProjekt(template.getProjekt());
+        process.setRegelsatz(template.getRegelsatz());
+        process.setDocket(template.getDocket());
+
+        BeanHelper bHelper = new BeanHelper();
+        bHelper.SchritteKopieren(template, process);
+        bHelper.ScanvorlagenKopieren(template, process);
+        bHelper.WerkstueckeKopieren(template, process);
+        bHelper.EigenschaftenKopieren(template, process);
+
+        return process;
+    }
+
+    private Fileformat getRecordFromCatalogue(Prefs prefs, String identifier, String opacName, String searchField) throws ImportPluginException {
+        ConfigOpacCatalogue coc = ConfigOpac.getInstance().getCatalogueByName(opacName);
+        if (coc == null) {
+            throw new ImportPluginException("Catalogue with name " + opacName + " not found. Please check goobi_opac.xml");
+        }
+        IOpacPlugin myImportOpac = (IOpacPlugin) PluginLoader.getPluginByTitle(PluginType.Opac, coc.getOpacType());
+        if (myImportOpac == null) {
+            throw new ImportPluginException("Opac plugin " + coc.getOpacType() + " not found. Abort.");
+        }
+        Fileformat myRdf = null;
+        try {
+            myRdf = myImportOpac.search(searchField, identifier, coc, prefs);
+            if (myRdf == null) {
+                throw new ImportPluginException("Could not import record " + identifier
+                        + ". Usually this means a ruleset mapping is not correct or the record can not be found in the catalogue.");
+            }
+        } catch (Exception e1) {
+            throw new ImportPluginException("Could not import record " + identifier
+                    + ". Usually this means a ruleset mapping is not correct or the record can not be found in the catalogue.");
+        }
+        DocStruct ds = null;
+        DocStruct anchor = null;
+        try {
+            ds = myRdf.getDigitalDocument().getLogicalDocStruct();
+            if (ds.getType().isAnchor()) {
+                anchor = ds;
+                if (ds.getAllChildren() == null || ds.getAllChildren().isEmpty()) {
+                    throw new ImportPluginException(
+                            "Could not import record " + identifier + ". Found anchor file, but no children. Try to import the child record.");
+                }
+                ds = ds.getAllChildren().get(0);
+            }
+        } catch (PreferencesException e1) {
+            throw new ImportPluginException("Could not import record " + identifier
+                    + ". Usually this means a ruleset mapping is not correct or the record can not be found in the catalogue.");
+        }
+
+        return myRdf;
     }
 
 }
