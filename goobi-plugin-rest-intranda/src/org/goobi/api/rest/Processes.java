@@ -251,6 +251,17 @@ public class Processes {
             resp.setErrorText("Could not save process to database.");
             return Response.status(500).entity(resp).build();
         }
+        //save template id and title 
+        Processproperty processProp = new Processproperty();
+        processProp.setProzess(p);
+        processProp.setTitel("TemplateID");
+        processProp.setWert(template.getId().toString());
+        PropertyManager.saveProcessProperty(processProp);
+        processProp = new Processproperty();
+        processProp.setProzess(p);
+        processProp.setTitel("Template");
+        processProp.setWert(template.getTitel());
+        PropertyManager.saveProcessProperty(processProp);
         if (req.getProperties() != null) {
             for (String key : req.getProperties().keySet()) {
                 // add properties
