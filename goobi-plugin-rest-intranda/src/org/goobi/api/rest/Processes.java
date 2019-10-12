@@ -26,11 +26,15 @@ package org.goobi.api.rest;
  * exception statement from your version.
  */
 import java.io.IOException;
+import java.io.InputStream;
+import java.nio.file.Paths;
 import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
@@ -40,10 +44,13 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
+import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 import org.apache.commons.lang3.StringUtils;
+import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
+import org.glassfish.jersey.media.multipart.FormDataParam;
 import org.goobi.api.db.RestDbHelper;
 import org.goobi.api.rest.model.RestProcess;
 import org.goobi.api.rest.request.AddProcessMetadataReq;
@@ -60,11 +67,14 @@ import org.goobi.api.rest.response.UpdateMetadataResponse;
 import org.goobi.beans.Process;
 import org.goobi.beans.Processproperty;
 import org.goobi.beans.Step;
+import org.goobi.beans.User;
+import org.goobi.managedbeans.LoginBean;
 import org.goobi.production.enums.PluginType;
 import org.goobi.production.plugin.PluginLoader;
 import org.goobi.production.plugin.interfaces.IOpacPlugin;
 
 import de.sub.goobi.helper.BeanHelper;
+import de.sub.goobi.helper.StorageProvider;
 import de.sub.goobi.helper.exceptions.DAOException;
 import de.sub.goobi.helper.exceptions.ImportPluginException;
 import de.sub.goobi.helper.exceptions.SwapException;
@@ -90,6 +100,59 @@ import ugh.fileformats.mets.MetsMods;
 @Path("/processes")
 @Produces(MediaType.APPLICATION_JSON)
 public class Processes {
+    @Context
+    HttpServletRequest request;
+
+    @POST
+    @Consumes(MediaType.MULTIPART_FORM_DATA)
+    @Path("/{processId}/images/{folder}")
+    public Response uploadFile(@PathParam("processId") int processId, @PathParam("folder") final String folder,
+            @FormDataParam("file") InputStream fileInputStream, @FormDataParam("file") FormDataContentDisposition fileMetaData) {
+        Process p = ProcessManager.getProcessById(processId);
+        HttpSession session = request.getSession();
+        LoginBean userBean = (LoginBean) session.getAttribute("LoginForm");
+        User user = null;
+        if (userBean != null) {
+            user = userBean.getMyBenutzer();
+        }
+        if (user != null) {
+            // authorized as user - check wether user is assigned to project
+            int stepProjectId = p.getProjectId();
+            boolean userInProject = user.getProjekte().stream().map(proj -> proj.getId()).anyMatch(projectId -> projectId == stepProjectId);
+            if (!userInProject) {
+                return Response.status(401).build();
+            }
+            // TODO: maybe more checks
+        }
+        String destFolder = null;
+        try {
+            if ("master".equals(folder)) {
+                destFolder = p.getImagesOrigDirectory(false);
+            } else {
+                destFolder = p.getImagesTifDirectory(false);
+            }
+        } catch (IOException | InterruptedException | SwapException | DAOException e) {
+            log.error(e);
+            return Response.status(500).build();
+        }
+        java.nio.file.Path path = Paths.get(destFolder);
+        if (!StorageProvider.getInstance().isFileExists(path)) {
+            try {
+                StorageProvider.getInstance().createDirectories(path);
+            } catch (IOException e) {
+                log.error(e);
+                return Response.status(500).build();
+            }
+        }
+
+        try {
+            StorageProvider.getInstance().uploadFile(fileInputStream, path.resolve(fileMetaData.getFileName()));
+        } catch (IOException e) {
+            log.error(e);
+            return Response.status(500).build();
+        }
+        return Response.ok().build();
+    }
 
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
