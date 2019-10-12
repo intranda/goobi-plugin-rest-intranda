@@ -229,7 +229,7 @@ public class Processes {
                 fileformat = new MetsMods(prefs);
             }
         } catch (PreferencesException e) {
-            // send error message 
+            // send error message
             log.error(e);
             CreationResponse resp = new CreationResponse();
             resp.setResult("error");
@@ -314,7 +314,7 @@ public class Processes {
             resp.setErrorText("Could not save process to database.");
             return Response.status(500).entity(resp).build();
         }
-        //save template id and title 
+        //save template id and title
         Processproperty processProp = new Processproperty();
         processProp.setProzess(p);
         processProp.setTitel("TemplateID");
@@ -459,6 +459,11 @@ public class Processes {
         resp.setCreationDate(p.getErstellungsdatum());
         resp.setId(p.getId());
         resp.setTitle(p.getTitel());
+        if ("100000000".equals(p.getSortHelperStatus())) {
+            resp.setProcessCompleted(true);
+        } else {
+            resp.setProcessCompleted(false);
+        }
 
         for (Step step : p.getSchritte()) {
             StepResponse sr = new StepResponse();
