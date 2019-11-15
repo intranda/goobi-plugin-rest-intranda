@@ -107,7 +107,8 @@ public class Processes {
     @Consumes(MediaType.MULTIPART_FORM_DATA)
     @Path("/{processId}/images/{folder}")
     public Response uploadFile(@PathParam("processId") int processId, @PathParam("folder") final String folder,
-            @FormDataParam("file") InputStream fileInputStream, @FormDataParam("file") FormDataContentDisposition fileMetaData) {
+            @FormDataParam("file") InputStream fileInputStream, @FormDataParam("file") FormDataContentDisposition fileMetaData,
+            @FormDataParam("filename") String filename) {
         Process p = ProcessManager.getProcessById(processId);
         HttpSession session = request.getSession();
         LoginBean userBean = (LoginBean) session.getAttribute("LoginForm");
@@ -146,7 +147,8 @@ public class Processes {
         }
 
         try {
-            StorageProvider.getInstance().uploadFile(fileInputStream, path.resolve(fileMetaData.getFileName()));
+            java.nio.file.Path dest = filename == null || filename.isEmpty() ? path.resolve(fileMetaData.getFileName()) : path.resolve(filename);
+            StorageProvider.getInstance().uploadFile(fileInputStream, dest);
         } catch (IOException e) {
             log.error(e);
             return Response.status(500).build();
