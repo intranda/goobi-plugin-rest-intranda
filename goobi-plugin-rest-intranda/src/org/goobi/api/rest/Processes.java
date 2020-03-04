@@ -117,14 +117,16 @@ public class Processes {
             user = userBean.getMyBenutzer();
         }
         if (user != null) {
-            // authorized as user - check wether user is assigned to project
+            // authorized as user - check whether user is assigned to project
             int stepProjectId = p.getProjectId();
             boolean userInProject = user.getProjekte().stream().map(proj -> proj.getId()).anyMatch(projectId -> projectId == stepProjectId);
             if (!userInProject) {
-                return Response.status(401).build();
+                log.error("fileupload: user not in project");
+                return Response.status(401).entity("User is not authorized to upload to this project.").build();
             }
             // TODO: maybe more checks
         }
+        log.info("all should be fine and we would copy the file to the correct folder now");
         String destFolder = null;
         try {
             if ("master".equals(folder)) {
