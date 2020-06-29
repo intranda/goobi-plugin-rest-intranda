@@ -127,13 +127,10 @@ public class Processes {
             // TODO: maybe more checks
         }
         log.info("all should be fine and we would copy the file to the correct folder now");
-        String destFolder = null;
+        String destFolder =null;
         try {
-            if ("master".equals(folder)) {
-                destFolder = p.getImagesOrigDirectory(false);
-            } else {
-                destFolder = p.getImagesTifDirectory(false);
-            }
+            destFolder = p.getConfiguredImageFolder(folder);
+
         } catch (IOException | InterruptedException | SwapException | DAOException e) {
             log.error(e);
             return Response.status(500).build();
