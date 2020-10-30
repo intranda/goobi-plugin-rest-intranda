@@ -1,5 +1,10 @@
 package org.goobi.api.rest;
 
+import java.net.URL;
+import java.net.URLClassLoader;
+import java.nio.file.Paths;
+import java.security.AccessController;
+import java.security.PrivilegedAction;
 /**
  * This file is part of a plugin for the Goobi Application - a Workflow tool for the support of mass digitization.
  * 
@@ -37,6 +42,9 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 
+import de.sub.goobi.config.ConfigurationHelper;
+import de.sub.goobi.helper.StorageProvider;
+
 @Path("/messages")
 public class Messages {
 
@@ -50,6 +58,30 @@ public class Messages {
         for (Enumeration<String> keys = bundle.getKeys(); keys.hasMoreElements();) {
             String key = keys.nextElement();
             bundleMap.put(key, bundle.getString(key));
+        }
+        java.nio.file.Path file = Paths.get(ConfigurationHelper.getInstance().getPathForLocalMessages());
+        if (StorageProvider.getInstance().isFileExists(file)) {
+            // Load local message bundle from file system only if file exists;
+            // if value not exists in bundle, use default bundle from classpath
+
+            try {
+                final URL resourceURL = file.toUri().toURL();
+                URLClassLoader urlLoader = AccessController.doPrivileged(new PrivilegedAction<URLClassLoader>() {
+                    @Override
+                    public URLClassLoader run() {
+                        return new URLClassLoader(new URL[] { resourceURL });
+                    }
+                });
+                ResourceBundle localBundle = ResourceBundle.getBundle("messages", locale, urlLoader);
+                if (localBundle != null) {
+                    for (Enumeration<String> keys = localBundle.getKeys(); keys.hasMoreElements();) {
+                        String key = keys.nextElement();
+                        bundleMap.put(key, localBundle.getString(key));
+                    }
+                }
+
+            } catch (Exception e) {
+            }
         }
         return bundleMap;
     }
