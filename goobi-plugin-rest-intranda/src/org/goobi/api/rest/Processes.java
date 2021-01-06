@@ -126,7 +126,7 @@ public class Processes {
             }
             // TODO: maybe more checks
         }
-        log.info("all should be fine and we would copy the file to the correct folder now");
+        log.debug("all should be fine and we would copy the file to the correct folder now");
         String destFolder =null;
         try {
             destFolder = p.getConfiguredImageFolder(folder);
