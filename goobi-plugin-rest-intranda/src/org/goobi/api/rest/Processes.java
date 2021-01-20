@@ -145,9 +145,6 @@ public class Processes {
         }
 
         try {
-            log.info("formdata filename: " + filename);
-            log.info("filemetadata filename: " + fileMetaData.getFileName());
-            log.info("filemetadata name: " + fileMetaData.getName());
             java.nio.file.Path dest = filename == null || filename.isEmpty() ? path.resolve(fileMetaData.getFileName()) : path.resolve(filename);
             StorageProvider.getInstance().uploadFile(fileInputStream, dest);
         } catch (IOException e) {
