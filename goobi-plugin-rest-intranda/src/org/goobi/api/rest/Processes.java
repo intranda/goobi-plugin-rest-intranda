@@ -126,8 +126,7 @@ public class Processes {
             }
             // TODO: maybe more checks
         }
-        log.debug("all should be fine and we would copy the file to the correct folder now");
-        String destFolder =null;
+        String destFolder = null;
         try {
             destFolder = p.getConfiguredImageFolder(folder);
 
@@ -146,6 +145,9 @@ public class Processes {
         }
 
         try {
+            log.info("formdata filename: " + filename);
+            log.info("filemetadata filename: " + fileMetaData.getFileName());
+            log.info("filemetadata name: " + fileMetaData.getName());
             java.nio.file.Path dest = filename == null || filename.isEmpty() ? path.resolve(fileMetaData.getFileName()) : path.resolve(filename);
             StorageProvider.getInstance().uploadFile(fileInputStream, dest);
         } catch (IOException e) {
