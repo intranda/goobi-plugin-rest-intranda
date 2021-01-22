@@ -500,7 +500,7 @@ public class CommandProcessCreate {
 
             step.setBearbeitungszeitpunkt(process.getErstellungsdatum());
             step.setEditTypeEnum(StepEditType.AUTOMATIC);
-            LoginBean loginForm = (LoginBean) Helper.getManagedBeanValue("#{LoginForm}");
+            LoginBean loginForm = Helper.getLoginBean();
             if (loginForm != null) {
                 step.setBearbeitungsbenutzer(loginForm.getMyBenutzer());
             }
