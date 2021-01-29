@@ -3,7 +3,7 @@ package org.goobi.api.rest.command;
 /**
  * This file is part of a plugin for the Goobi Application - a Workflow tool for the support of mass digitization.
  * 
- * Visit the websites for more information. 
+ * Visit the websites for more information.
  *          - https://goobi.io
  *          - https://www.intranda.com
  *          - https://github.com/intranda/goobi
@@ -66,7 +66,7 @@ public class CommandSetStepToError {
             source.setEditTypeEnum(StepEditType.MANUAL_SINGLE);
             source.setBearbeitungszeitpunkt(new Date());
             source.setBearbeitungsbeginn(null);
-
+            source.setBearbeitungsende(new Date());
             StepManager.saveStep(source);
 
         } catch (DAOException e) {
