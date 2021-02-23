@@ -359,7 +359,9 @@ public class Processes {
     @Path("/search")
     public List<RestProcess> simpleSearch(@QueryParam("field") String field, @QueryParam("value") String value, @QueryParam("limit") int limit,
             @QueryParam("offset") int offset, @QueryParam("orderby") String sortField, @QueryParam("descending") boolean sortDescending,
-            @QueryParam("filterProjects") String filterProjects) throws SQLException {
+            @QueryParam("filterProjects") String filterProjects, 
+            @QueryParam("propName") String propName, @QueryParam("propValue") String propValue,
+            @QueryParam("stepName") String stepName, @QueryParam("stepStatus") String stepStatus) throws SQLException {
         SearchQuery query = new SearchQuery(field, value, RelationalOperator.LIKE);
         SearchGroup group = new SearchGroup();
         group.addFilter(query);
@@ -369,6 +371,8 @@ public class Processes {
         req.setOffset(offset);
         req.setSortField(sortField);
         req.setSortDescending(sortDescending);
+        req.setProperty(propName, propValue);
+        req.setStepStatus(stepName, stepStatus);
         if (filterProjects != null) {
             req.setFilterProjects(Arrays.asList(filterProjects.split(",")));
         }
@@ -476,6 +480,7 @@ public class Processes {
             }
             sr.setTitle(step.getTitel());
             sr.setOrder(step.getReihenfolge());
+            sr.setId(step.getId());
         }
     }
 

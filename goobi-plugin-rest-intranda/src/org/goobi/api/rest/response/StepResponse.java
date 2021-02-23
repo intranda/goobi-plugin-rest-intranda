@@ -36,7 +36,7 @@ import lombok.Data;
 
 @XmlRootElement
 
-@JsonPropertyOrder({ "title", "status", "user", "startDate", "endDate", "status", "order" })
+@JsonPropertyOrder({ "title", "status", "id", "user", "startDate", "endDate", "status", "order" })
 public @Data class StepResponse {
 
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ssZ", timezone = "CET")
@@ -49,8 +49,10 @@ public @Data class StepResponse {
 
     private String status;
 
+    private int id;
+    
     private String title;
-
+    
     private int order;
 
 }
