@@ -52,19 +52,17 @@ public class Emails {
         } catch (UnsupportedEncodingException e2) {
 
         }
-        Map<String, String> tokenMap = new HashMap<>();
-        tokenMap.put("purpose", "disablemails");
-        tokenMap.put("type", "all");
-        tokenMap.put("user", userName);
+        Map<String, String> deactivateStepMap = new HashMap<>();
+        deactivateStepMap.put("purpose", "disablemails");
+        deactivateStepMap.put("type", "all");
+        deactivateStepMap.put("user", userName);
 
         try {
-            if (!JwtHelper.validateToken(token, tokenMap)) {
-                //                return Response.status(404).build();
+            if (!JwtHelper.validateToken(token, deactivateStepMap)) {
                 return getErrorPage(Status.BAD_REQUEST, "invalid request, your url is worng or to old.");
             }
         } catch (ConfigurationException e1) {
             log.error(e1);
-            //            return Response.status(500).build();
             return getErrorPage(Status.INTERNAL_SERVER_ERROR, "Configuration error, try again later.");
         }
 
@@ -121,6 +119,7 @@ public class Emails {
                 return getErrorPage(Status.BAD_REQUEST, "invalid request, your url is worng or to old.");
             }
         } catch (ConfigurationException e1) {
+            log.error(e1);
             return getErrorPage(Status.INTERNAL_SERVER_ERROR, "Configuration error, try again later.");
         }
 

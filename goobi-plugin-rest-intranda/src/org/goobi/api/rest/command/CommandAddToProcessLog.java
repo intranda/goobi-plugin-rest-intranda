@@ -55,17 +55,10 @@ public class CommandAddToProcessLog {
     @Path("/processtitles/{processtitle}/{type}")
     public Response addToLogByProcessTitle(@PathParam("processtitle") String processTitle, @PathParam("type") String type, String value) {
         Process process = ProcessManager.getProcessByExactTitle(processTitle);
-        LogEntry logEntry = new LogEntry();
-        logEntry.setContent(value);
-        logEntry.setCreationDate(new Date());
-        logEntry.setProcessId(process.getId());
-        logEntry.setType(LogType.getByTitle(type));
-
-        logEntry.setUserName("webapi");
-
-        ProcessManager.saveLogEntry(logEntry);
-        return Response.ok().build();
+        return addToLog(type, value, process);
     }
+
+
 
     @POST
     @Path("/steps/{stepid}/{type}")
@@ -82,16 +75,7 @@ public class CommandAddToProcessLog {
         processId = so.getProcessId();
         process = ProcessManager.getProcessById(processId);
 
-        LogEntry logEntry = new LogEntry();
-        logEntry.setContent(value);
-        logEntry.setCreationDate(new Date());
-        logEntry.setProcessId(process.getId());
-        logEntry.setType(LogType.getByTitle(type));
-
-        logEntry.setUserName("webapi");
-
-        ProcessManager.saveLogEntry(logEntry);
-        return Response.ok().build();
+        return addToLog(type, value, process);
     }
 
     @POST
@@ -106,6 +90,10 @@ public class CommandAddToProcessLog {
             return Response.status(500).entity(message).build();
         }
         
+        return addToLog(type, value, process);
+    }
+    
+    private Response addToLog(String type, String value, Process process) {
         LogEntry logEntry = new LogEntry();
         logEntry.setContent(value);
         logEntry.setCreationDate(new Date());
