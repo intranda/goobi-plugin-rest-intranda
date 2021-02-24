@@ -49,9 +49,11 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 import org.apache.commons.lang3.StringUtils;
+import org.eclipse.jetty.util.ajax.JSON;
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
 import org.glassfish.jersey.media.multipart.FormDataParam;
 import org.goobi.api.db.RestDbHelper;
+import org.goobi.api.rest.command.CommandAddToProcessLog;
 import org.goobi.api.rest.model.RestProcess;
 import org.goobi.api.rest.request.AddProcessMetadataReq;
 import org.goobi.api.rest.request.DeleteProcessMetadataReq;
@@ -64,6 +66,7 @@ import org.goobi.api.rest.response.CreationResponse;
 import org.goobi.api.rest.response.ProcessStatusResponse;
 import org.goobi.api.rest.response.StepResponse;
 import org.goobi.api.rest.response.UpdateMetadataResponse;
+import org.goobi.beans.LogEntry;
 import org.goobi.beans.Process;
 import org.goobi.beans.Processproperty;
 import org.goobi.beans.Step;
@@ -102,6 +105,15 @@ import ugh.fileformats.mets.MetsMods;
 public class Processes {
     @Context
     HttpServletRequest request;
+
+    @POST
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Path("/{processId}/logentries")
+    public Response addLogentry(@PathParam("processId") int processId, LogEntry logentry) {
+
+        CommandAddToProcessLog addToLog = new CommandAddToProcessLog();
+        return addToLog.addToLogByProcessId(processId, logentry.getType().toString().toLowerCase(), logentry.getContent());
+    }
 
     @POST
     @Consumes(MediaType.MULTIPART_FORM_DATA)
@@ -359,8 +371,7 @@ public class Processes {
     @Path("/search")
     public List<RestProcess> simpleSearch(@QueryParam("field") String field, @QueryParam("value") String value, @QueryParam("limit") int limit,
             @QueryParam("offset") int offset, @QueryParam("orderby") String sortField, @QueryParam("descending") boolean sortDescending,
-            @QueryParam("filterProjects") String filterProjects, 
-            @QueryParam("propName") String propName, @QueryParam("propValue") String propValue,
+            @QueryParam("filterProjects") String filterProjects, @QueryParam("propName") String propName, @QueryParam("propValue") String propValue,
             @QueryParam("stepName") String stepName, @QueryParam("stepStatus") String stepStatus) throws SQLException {
         SearchQuery query = new SearchQuery(field, value, RelationalOperator.LIKE);
         SearchGroup group = new SearchGroup();

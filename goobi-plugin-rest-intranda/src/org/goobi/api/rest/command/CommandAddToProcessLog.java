@@ -101,6 +101,11 @@ public class CommandAddToProcessLog {
 
         process = ProcessManager.getProcessById(processId);
 
+        if (process == null) {
+            String message = "Could not load process with id: " + processId;
+            return Response.status(500).entity(message).build();
+        }
+        
         LogEntry logEntry = new LogEntry();
         logEntry.setContent(value);
         logEntry.setCreationDate(new Date());
