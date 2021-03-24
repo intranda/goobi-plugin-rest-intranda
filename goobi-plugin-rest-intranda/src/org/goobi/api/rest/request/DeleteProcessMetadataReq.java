@@ -3,7 +3,7 @@ package org.goobi.api.rest.request;
 /**
  * This file is part of a plugin for the Goobi Application - a Workflow tool for the support of mass digitization.
  * 
- * Visit the websites for more information. 
+ * Visit the websites for more information.
  *          - https://goobi.io
  *          - https://www.intranda.com
  *          - https://github.com/intranda/goobi
@@ -76,20 +76,15 @@ public class DeleteProcessMetadataReq {
                     for (MetadataGroup delGroup : groups) {
                         List<Metadata> allMeta = new ArrayList<>(delGroup.getMetadataByType(metaName));
                         for (Metadata inMeta : allMeta) {
-                            if (!dd.getLogicalDocStruct().removeMetadata(inMeta)) {
-                                resp.setError(true);
-                                resp.addErrorMessage("Can not delete " + name);
-                            }
+                            dd.getLogicalDocStruct().removeMetadata(inMeta);
                         }
                     }
                 } else {
                     MetadataType mt = prefs.getMetadataTypeByName(name);
                     List<Metadata> allMeta = new ArrayList<>(dd.getLogicalDocStruct().getAllMetadataByType(mt));
                     for (Metadata inMeta : allMeta) {
-                        if (!dd.getLogicalDocStruct().removeMetadata(inMeta)) {
-                            resp.setError(true);
-                            resp.addErrorMessage("Can not delete " + name);
-                        }
+                        dd.getLogicalDocStruct().removeMetadata(inMeta);
+
                     }
                 }
             }
