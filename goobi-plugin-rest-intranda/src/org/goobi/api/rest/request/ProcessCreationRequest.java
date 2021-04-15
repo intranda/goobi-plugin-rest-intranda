@@ -8,6 +8,8 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlElementWrapper;
 import javax.xml.bind.annotation.XmlRootElement;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import lombok.Data;
 
 @Data
@@ -29,6 +31,7 @@ public class ProcessCreationRequest {
 
     @XmlElementWrapper
     @XmlElement(name = "property")
+    @JsonProperty("properties")
     private Map<String, String> properties;
 
     /*
