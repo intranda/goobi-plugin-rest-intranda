@@ -59,6 +59,16 @@ import de.sub.goobi.persistence.managers.StepManager;
 @Path("/steps")
 public class Steps {
 
+    @Path("/{id}/reportproblem/{destinationTitle}")
+    @POST
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response getReportProblemForTaskFromBody(@PathParam("id") String stepId, @PathParam("destinationTitle") String destinationTitle,  String errorMessage) {
+        
+        return getReportProblemForTask(stepId,  destinationTitle, errorMessage);
+    }
+    
+    
+    
     @Path("/{id}/reportproblem/{destinationTitle}/{errortext}")
     @POST
     @Produces(MediaType.APPLICATION_JSON)

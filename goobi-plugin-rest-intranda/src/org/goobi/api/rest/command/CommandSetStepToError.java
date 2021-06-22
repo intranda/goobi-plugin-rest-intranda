@@ -57,7 +57,7 @@ public class CommandSetStepToError {
      */
     @Path("/{stepid}")
     @POST
-    @Produces(MediaType.TEXT_PLAIN)
+    @Produces(MediaType.APPLICATION_JSON)
     public Response setStepToError(@PathParam("stepid") int sourceid) {
 
         try {
@@ -87,7 +87,7 @@ public class CommandSetStepToError {
      */
     @Path("/processtitles/{processtitle}/{stepname}")
     @POST
-    @Produces(MediaType.TEXT_PLAIN)
+    @Produces(MediaType.APPLICATION_JSON)
     public Response setStepToErrorByName(@PathParam("processtitle") String processTitle, @PathParam("stepname") String stepName) {
         Process p = ProcessManager.getProcessByExactTitle(processTitle);
         List<Step> allSteps = StepManager.getStepsForProcess(p.getId());

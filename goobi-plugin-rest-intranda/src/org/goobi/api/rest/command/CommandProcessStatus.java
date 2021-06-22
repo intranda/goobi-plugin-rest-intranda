@@ -217,6 +217,7 @@ public class CommandProcessStatus {
             }
             sr.setTitle(step.getTitel());
             sr.setOrder(step.getReihenfolge());
+            sr.setId(step.getId());
         }
     }
 }
