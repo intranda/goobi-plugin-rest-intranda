@@ -8,7 +8,7 @@ import java.security.PrivilegedAction;
 /**
  * This file is part of a plugin for the Goobi Application - a Workflow tool for the support of mass digitization.
  * 
- * Visit the websites for more information. 
+ * Visit the websites for more information.
  *          - https://goobi.io
  *          - https://www.intranda.com
  *          - https://github.com/intranda/goobi
@@ -53,7 +53,7 @@ public class Messages {
     @Produces(MediaType.APPLICATION_JSON)
     public Map<String, String> getBundleForLanguage(@PathParam("language") String language) {
         Locale locale = new Locale(language);
-        ResourceBundle bundle = ResourceBundle.getBundle("messages.messages", locale);
+        ResourceBundle bundle = ResourceBundle.getBundle("messages", locale);
         Map<String, String> bundleMap = new HashMap<>();
         for (Enumeration<String> keys = bundle.getKeys(); keys.hasMoreElements();) {
             String key = keys.nextElement();
