@@ -112,21 +112,14 @@ public class CommandImageDownload {
         StreamingOutput fileStream = new StreamingOutput() {
             @Override
             public void write(OutputStream output) throws IOException, WebApplicationException {
-                FileInputStream input = new FileInputStream(new File(zipFile));
-
-                try {
-                    int bytes;
-                    while ((bytes = input.read()) != -1) {
-                        output.write(bytes);
-                    }
-                } catch (Exception e) {
-                    throw new WebApplicationException(e);
-                } finally {
-                    if (output != null) {
-                        output.close();
-                    }
-                    if (input != null) {
-                        input.close();
+                try (FileInputStream input = new FileInputStream(new File(zipFile))) {
+                    try {
+                        int bytes;
+                        while ((bytes = input.read()) != -1) {
+                            output.write(bytes);
+                        }
+                    } catch (Exception e) {
+                        throw new WebApplicationException(e);
                     }
                 }
             }
@@ -166,7 +159,7 @@ public class CommandImageDownload {
                 zos.close();
             }
         }
-        if (checksum==null) {
+        if (checksum == null) {
             return null;
         }
         return checksum.digest();
@@ -196,7 +189,6 @@ public class CommandImageDownload {
                 }
 
                 bis.close();
-
 
             } catch (IOException e) {
                 log.error(e);
