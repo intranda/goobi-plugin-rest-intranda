@@ -3,7 +3,7 @@ package org.goobi.api.rest.command;
 /**
  * This file is part of a plugin for the Goobi Application - a Workflow tool for the support of mass digitization.
  * 
- * Visit the websites for more information. 
+ * Visit the websites for more information.
  *          - https://goobi.io
  *          - https://www.intranda.com
  *          - https://github.com/intranda/goobi
@@ -166,7 +166,9 @@ public class CommandImageDownload {
                 zos.close();
             }
         }
-
+        if (checksum==null) {
+            return null;
+        }
         return checksum.digest();
     }
 
@@ -192,9 +194,9 @@ public class CommandImageDownload {
                         checksum.update(buffer, 0, size);
                     }
                 }
-                if (bis != null) {
-                    bis.close();
-                }
+
+                bis.close();
+
 
             } catch (IOException e) {
                 log.error(e);
@@ -203,9 +205,9 @@ public class CommandImageDownload {
         } else if (Files.isDirectory(file)) {
             ZipEntry entry = new ZipEntry(path + file.getFileName() + File.separator);
             zos.putNextEntry(entry);
-            if (zos != null && entry != null) {
-                zos.closeEntry();
-            }
+
+            zos.closeEntry();
+
             List<java.nio.file.Path> subfiles = StorageProvider.getInstance().listFiles(file.toString());
 
             if (!subfiles.isEmpty()) {

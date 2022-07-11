@@ -3,7 +3,7 @@ package org.goobi.api.rest.command;
 /**
  * This file is part of a plugin for the Goobi Application - a Workflow tool for the support of mass digitization.
  * 
- * Visit the websites for more information. 
+ * Visit the websites for more information.
  *          - https://goobi.io
  *          - https://www.intranda.com
  *          - https://github.com/intranda/goobi
@@ -103,7 +103,7 @@ public class CommandStepClose {
         }
         return closeStepAndRemoveLink(null, so.getId());
     }
-    
+
     @Path("/{stepid}")
     @POST
     @Produces(MediaType.TEXT_XML)
@@ -165,7 +165,7 @@ public class CommandStepClose {
                 }
             }
         }
-        if (so.getBearbeitungsstatusEnum().equals(StepStatus.DONE)) {
+        if (so != null && so.getBearbeitungsstatusEnum().equals(StepStatus.DONE)) {
             message = "Step was already closed.";
             status = Response.Status.BAD_REQUEST;
             cr.setResult("error");
@@ -177,7 +177,6 @@ public class CommandStepClose {
             log.debug("step closed");
         }
         cr.setComment(message);
-        Response resp = Response.status(status).entity(cr).build();
-        return resp;
+        return Response.status(status).entity(cr).build();
     }
 }

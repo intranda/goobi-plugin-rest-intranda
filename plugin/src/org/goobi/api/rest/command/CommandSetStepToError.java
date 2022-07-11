@@ -71,7 +71,6 @@ public class CommandSetStepToError {
 
         } catch (DAOException e) {
             String message = "An error occured: " + e.getMessage();
-            // return new CommandResponse(500,title, message);
             return Response.serverError().entity(message).build();
         }
 

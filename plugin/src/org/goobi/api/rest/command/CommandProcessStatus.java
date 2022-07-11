@@ -3,7 +3,7 @@ package org.goobi.api.rest.command;
 /**
  * This file is part of a plugin for the Goobi Application - a Workflow tool for the support of mass digitization.
  * 
- * Visit the websites for more information. 
+ * Visit the websites for more information.
  *          - https://goobi.io
  *          - https://www.intranda.com
  *          - https://github.com/intranda/goobi
@@ -80,22 +80,6 @@ public class CommandProcessStatus {
         resp.addProperties(pps);
         return resp;
     }
-
-    //    @Path("details/title/xml/{processTitle}")
-    //    @GET
-    //    @Produces(MediaType.TEXT_XML)
-    //    public ProcessStatusResponse getProcessStatusAsXml(@PathParam("processTitle") String processTitle) {
-    //        ProcessStatusResponse resp = getData(processTitle);
-    //        return resp;
-    //    }
-    //
-    //    @Path("details/id/xml/{processId}")
-    //    @GET
-    //    @Produces(MediaType.TEXT_XML)
-    //    public ProcessStatusResponse getProcessStatusAsXml(@PathParam("processTitle") int processId) {
-    //        ProcessStatusResponse resp = getData(processId);
-    //        return resp;
-    //    }
 
     @Path("report/{startdate}/{enddate}")
     @GET

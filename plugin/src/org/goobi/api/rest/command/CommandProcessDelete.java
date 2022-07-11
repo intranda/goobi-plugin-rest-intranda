@@ -3,7 +3,7 @@ package org.goobi.api.rest.command;
 /**
  * This file is part of a plugin for the Goobi Application - a Workflow tool for the support of mass digitization.
  * 
- * Visit the websites for more information. 
+ * Visit the websites for more information.
  *          - https://goobi.io
  *          - https://www.intranda.com
  *          - https://github.com/intranda/goobi
@@ -62,8 +62,7 @@ public class CommandProcessDelete {
         if (process == null) {
             response.setResult("error");
             response.setErrorText("Process does not exist.");
-            Response resp = Response.status(Response.Status.NOT_FOUND).entity(response).build();
-            return resp;
+            return Response.status(Response.Status.NOT_FOUND).entity(response).build();
 
         } else {
             response.setProcessName(process.getTitel());
@@ -72,8 +71,7 @@ public class CommandProcessDelete {
             ProcessManager.deleteProcess(process);
             response.setResult("success");
         }
-        Response resp = Response.status(Response.Status.OK).entity(response).build();
-        return resp;
+        return Response.status(Response.Status.OK).entity(response).build();
     }
 
     private void deleteDirectory(Process process) {

@@ -168,8 +168,7 @@ public class Processes {
     }
 
     @POST
-    @Operation(summary = "Creates a new process",
-            description = "Creates a new process with given metadata and process properties.")
+    @Operation(summary = "Creates a new process", description = "Creates a new process with given metadata and process properties.")
     @ApiResponse(responseCode = "200", description = "OK")
     @ApiResponse(responseCode = "500", description = "Internal error")
     @Consumes(MediaType.APPLICATION_JSON)
@@ -264,7 +263,6 @@ public class Processes {
             try {
                 digDoc = fileformat.getDigitalDocument();
             } catch (PreferencesException e) {
-                // TODO Auto-generated catch block
                 log.error(e);
                 return null;
             }
@@ -299,7 +297,7 @@ public class Processes {
                 // add metadata to new process
                 MetadataType mdt = prefs.getMetadataTypeByName(key);
                 if (mdt == null) {
-                    // another good errormessage and return;
+                    // another good error message and return;
                     CreationResponse resp = new CreationResponse();
                     resp.setResult("error");
                     resp.setErrorText(String.format("Could not find MetadataType for \"%s\" in ruleset.", key));
@@ -539,16 +537,11 @@ public class Processes {
                     + ". Usually this means a ruleset mapping is not correct or the record can not be found in the catalogue.");
         }
         DocStruct ds = null;
-        DocStruct anchor = null;
         try {
             ds = myRdf.getDigitalDocument().getLogicalDocStruct();
-            if (ds.getType().isAnchor()) {
-                anchor = ds;
-                if (ds.getAllChildren() == null || ds.getAllChildren().isEmpty()) {
-                    throw new ImportPluginException(
-                            "Could not import record " + identifier + ". Found anchor file, but no children. Try to import the child record.");
-                }
-                ds = ds.getAllChildren().get(0);
+            if (ds.getType().isAnchor() && ds.getAllChildren() == null || ds.getAllChildren().isEmpty()) {
+                throw new ImportPluginException(
+                        "Could not import record " + identifier + ". Found anchor file, but no children. Try to import the child record.");
             }
         } catch (PreferencesException e1) {
             throw new ImportPluginException("Could not import record " + identifier

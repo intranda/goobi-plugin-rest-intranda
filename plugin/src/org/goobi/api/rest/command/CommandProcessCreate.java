@@ -3,7 +3,7 @@ package org.goobi.api.rest.command;
 /**
  * This file is part of a plugin for the Goobi Application - a Workflow tool for the support of mass digitization.
  * 
- * Visit the websites for more information. 
+ * Visit the websites for more information.
  *          - https://goobi.io
  *          - https://www.intranda.com
  *          - https://github.com/intranda/goobi
@@ -193,8 +193,8 @@ public class CommandProcessCreate {
             cr.setProcessId(p.getId());
             cr.setProcessName(p.getTitel());
             //            response.setStatus(HttpServletResponse.SC_CONFLICT);
-            Response resp = Response.status(Response.Status.CONFLICT).entity(cr).build();
-            return resp;
+            return Response.status(Response.Status.CONFLICT).entity(cr).build();
+
         }
 
         Process template = ProcessManager.getProcessByTitle(req.getGoobiWorkflow());
@@ -203,8 +203,7 @@ public class CommandProcessCreate {
             cr.setErrorText("Process template " + req.getGoobiWorkflow() + " does not exist.");
             cr.setProcessId(0);
             cr.setProcessName(req.getSourceID());
-            Response resp = Response.status(Response.Status.BAD_REQUEST).entity(cr).build();
-            return resp;
+            return Response.status(Response.Status.BAD_REQUEST).entity(cr).build();
         }
 
         Prefs prefs = template.getRegelsatz().getPreferences();
@@ -240,8 +239,7 @@ public class CommandProcessCreate {
         } catch (UGHException e) {
             cr.setResult("error");
             cr.setErrorText("Error during metadata creation for " + req.getSourceID() + ": " + e.getMessage());
-            Response resp = Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(cr).build();
-            return resp;
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(cr).build();
         }
         Process process = cloneTemplate(template);
         // set title
@@ -261,8 +259,7 @@ public class CommandProcessCreate {
         } catch (Exception e) {
             cr.setResult("error");
             cr.setErrorText("Error during process creation for " + req.getSourceID() + ": " + e.getMessage());
-            Response resp = Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(cr).build();
-            return resp;
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(cr).build();
         }
         if (StringUtils.isNotBlank(req.getObjectId())) {
             setProperty(process.getId(), "objectId", req.getObjectId(), true);
@@ -288,7 +285,7 @@ public class CommandProcessCreate {
         }
         setProperty(process.getId(), "OCR", ocr, true);
 
-        if (req.getTags() != null && req.getTags().size() > 0) {
+        if (req.getTags() != null && !req.getTags().isEmpty()) {
             for (StanfordCreationRequestTag tag : req.getTags()) {
                 if (StringUtils.isNotBlank(tag.getName())) {
                     setProperty(process.getId(), tag.getName(), tag.getValue(), false);
@@ -304,8 +301,7 @@ public class CommandProcessCreate {
         cr.setResult("success");
         cr.setProcessName(process.getTitel());
         cr.setProcessId(process.getId());
-        Response resp = Response.status(Response.Status.CREATED).entity(cr).build();
-        return resp;
+        return Response.status(Response.Status.CREATED).entity(cr).build();
     }
 
     @Path("/mpicreate")
@@ -324,8 +320,7 @@ public class CommandProcessCreate {
             cr.setProcessId(p.getId());
             cr.setProcessName(p.getTitel());
             //            response.setStatus(HttpServletResponse.SC_CONFLICT);
-            Response resp = Response.status(Response.Status.CONFLICT).entity(cr).build();
-            return resp;
+            return Response.status(Response.Status.CONFLICT).entity(cr).build();
         }
 
         Process template = ProcessManager.getProcessByTitle(req.getGoobiWorkflow());
@@ -334,8 +329,7 @@ public class CommandProcessCreate {
             cr.setErrorText("Process template " + req.getGoobiWorkflow() + " does not exist.");
             cr.setProcessId(0);
             cr.setProcessName(req.getBarcode());
-            Response resp = Response.status(Response.Status.BAD_REQUEST).entity(cr).build();
-            return resp;
+            return Response.status(Response.Status.BAD_REQUEST).entity(cr).build();
         }
 
         Prefs prefs = template.getRegelsatz().getPreferences();
@@ -362,8 +356,7 @@ public class CommandProcessCreate {
         } catch (UGHException e) {
             cr.setResult("error");
             cr.setErrorText("Error during metadata creation for " + req.getBarcode() + ": " + e.getMessage());
-            Response resp = Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(cr).build();
-            return resp;
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(cr).build();
         }
         Process process = cloneTemplate(template);
         // set title
@@ -374,8 +367,7 @@ public class CommandProcessCreate {
         } catch (Exception e) {
             cr.setResult("error");
             cr.setErrorText("Error during process creation for " + req.getBarcode() + ": " + e.getMessage());
-            Response resp = Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(cr).build();
-            return resp;
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(cr).build();
         }
         if (StringUtils.isNotBlank(req.getBarcode())) {
             Processproperty idObject = new Processproperty();
@@ -445,8 +437,7 @@ public class CommandProcessCreate {
         cr.setResult("success");
         cr.setProcessName(process.getTitel());
         cr.setProcessId(process.getId());
-        Response resp = Response.status(Response.Status.CREATED).entity(cr).build();
-        return resp;
+        return Response.status(Response.Status.CREATED).entity(cr).build();
     }
 
     private Process cloneTemplate(Process template) {
@@ -523,7 +514,7 @@ public class CommandProcessCreate {
         try {
             MetadataType mdt = prefs.getMetadataTypeByName("pathimagefiles");
             List<? extends Metadata> alleImagepfade = ff.getDigitalDocument().getPhysicalDocStruct().getAllMetadataByType(mdt);
-            if (alleImagepfade != null && alleImagepfade.size() > 0) {
+            if (alleImagepfade != null && !alleImagepfade.isEmpty()) {
                 for (Metadata md : alleImagepfade) {
                     ff.getDigitalDocument().getPhysicalDocStruct().getAllMetadata().remove(md);
                 }
@@ -578,7 +569,6 @@ public class CommandProcessCreate {
 
         // create (new) property
         Processproperty pp = new Processproperty();
-        Process p = ProcessManager.getProcessById(processId);
         pp.setProcessId(processId);
         pp.setTitel(name);
         pp.setWert(value);
