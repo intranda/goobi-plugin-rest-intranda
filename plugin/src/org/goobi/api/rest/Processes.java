@@ -143,7 +143,7 @@ public class Processes {
         try {
             destFolder = p.getConfiguredImageFolder(folder);
 
-        } catch (IOException | InterruptedException | SwapException | DAOException e) {
+        } catch (IOException  | SwapException | DAOException e) {
             log.error(e);
             return Response.status(500).build();
         }
@@ -352,7 +352,7 @@ public class Processes {
         }
         try {
             p.writeMetadataFile(fileformat);
-        } catch (WriteException | PreferencesException | IOException | InterruptedException | SwapException | DAOException e) {
+        } catch (WriteException | PreferencesException | IOException  | SwapException e) {
             log.error(e);
             CreationResponse resp = new CreationResponse();
             resp.setResult("error");

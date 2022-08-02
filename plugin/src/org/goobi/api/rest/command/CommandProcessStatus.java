@@ -46,7 +46,6 @@ import org.goobi.beans.Processproperty;
 import org.goobi.beans.Step;
 
 import de.sub.goobi.helper.StorageProvider;
-import de.sub.goobi.helper.exceptions.DAOException;
 import de.sub.goobi.helper.exceptions.SwapException;
 import de.sub.goobi.persistence.managers.ProcessManager;
 import de.sub.goobi.persistence.managers.PropertyManager;
@@ -92,7 +91,7 @@ public class CommandProcessStatus {
         } else {
             sql += "erstellungsdatum > '" + start + "'";
         }
-        List<Integer> processIdList = ProcessManager.getIDList(sql);
+        List<Integer> processIdList = ProcessManager.getIdsForFilter(sql);
 
         List<ProcessStatusResponse> processList = new LinkedList<>();
 
@@ -149,7 +148,7 @@ public class CommandProcessStatus {
             if (files.isEmpty()) {
                 return Response.status(Status.PARTIAL_CONTENT).entity("Process has no images.").build();
             }
-        } catch (IOException | InterruptedException | SwapException | DAOException e) {
+        } catch (IOException | SwapException e) {
             log.error(e);
             return Response.status(Status.INTERNAL_SERVER_ERROR).entity("Internal server error.").build();
         }
