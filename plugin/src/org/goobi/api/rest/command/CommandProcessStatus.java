@@ -184,6 +184,8 @@ public class CommandProcessStatus {
         resp.setCreationDate(p.getErstellungsdatum());
         resp.setId(p.getId());
         resp.setTitle(p.getTitel());
+        resp.setProject(p.getProjekt().getTitel());
+        resp.setRuleset(p.getRegelsatz().getDatei());
         if ("100000000".equals(p.getSortHelperStatus())) {
             resp.setProcessCompleted(true);
         } else {
