@@ -3,7 +3,7 @@ package org.goobi.api.rest;
 /**
  * This file is part of a plugin for the Goobi Application - a Workflow tool for the support of mass digitization.
  * 
- * Visit the websites for more information. 
+ * Visit the websites for more information.
  *          - https://goobi.io
  *          - https://www.intranda.com
  *          - https://github.com/intranda/goobi
@@ -42,7 +42,6 @@ import javax.ws.rs.core.Response.Status;
 import org.goobi.api.rest.request.ReportProblem;
 import org.goobi.api.rest.response.ReportProblemResponse;
 import org.goobi.beans.ErrorProperty;
-import org.goobi.beans.LogEntry;
 import org.goobi.beans.Step;
 import org.goobi.production.enums.LogType;
 
@@ -63,12 +62,12 @@ public class Steps {
     @POST
     @Produces(MediaType.APPLICATION_JSON)
     public Response getReportProblemForTaskFromBody(@PathParam("id") String stepId, @PathParam("destinationTitle") String destinationTitle,  String errorMessage) {
-        
+
         return getReportProblemForTask(stepId,  destinationTitle, errorMessage);
     }
-    
-    
-    
+
+
+
     @Path("/{id}/reportproblem/{destinationTitle}/{errortext}")
     @POST
     @Produces(MediaType.APPLICATION_JSON)
@@ -111,15 +110,7 @@ public class Steps {
                 temp.setCorrectionStep();
                 temp.setBearbeitungsende(null);
 
-                LogEntry logEntry = new LogEntry();
-                logEntry.setContent(Helper.getTranslation("Korrektur notwendig") + " [automatic] " + errorMessage);
-                logEntry.setCreationDate(myDate);
-                logEntry.setProcessId(temp.getProzess().getId());
-                logEntry.setType(LogType.ERROR);
-
-                logEntry.setUserName("webapi");
-
-                ProcessManager.saveLogEntry(logEntry);
+                Helper.addMessageToProcessJournal(temp.getProzess().getId(), LogType.ERROR, Helper.getTranslation("Korrektur notwendig") + " [automatic] " + errorMessage, "webapi");
 
                 HistoryManager.addHistory(myDate, temp.getReihenfolge().doubleValue(), temp.getTitel(), HistoryEventType.stepError.getValue(),
                         temp.getProzess().getId());

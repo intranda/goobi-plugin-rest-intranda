@@ -65,7 +65,7 @@ import org.goobi.api.rest.response.CreationResponse;
 import org.goobi.api.rest.response.ProcessStatusResponse;
 import org.goobi.api.rest.response.StepResponse;
 import org.goobi.api.rest.response.UpdateMetadataResponse;
-import org.goobi.beans.LogEntry;
+import org.goobi.beans.JournalEntry;
 import org.goobi.beans.Process;
 import org.goobi.beans.Processproperty;
 import org.goobi.beans.Step;
@@ -110,7 +110,7 @@ public class Processes {
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
     @Path("/{processId}/logentries")
-    public Response addLogentry(@PathParam("processId") int processId, LogEntry logentry) {
+    public Response addLogentry(@PathParam("processId") int processId, JournalEntry logentry) {
 
         CommandAddToProcessLog addToLog = new CommandAddToProcessLog();
         return addToLog.addToLogByProcessId(processId, logentry.getType().toString().toLowerCase(), logentry.getContent());
