@@ -27,7 +27,6 @@ package org.goobi.api.rest;
  */
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.Iterator;
 import java.util.List;
 
 import javax.ws.rs.Consumes;
@@ -61,12 +60,11 @@ public class Steps {
     @Path("/{id}/reportproblem/{destinationTitle}")
     @POST
     @Produces(MediaType.APPLICATION_JSON)
-    public Response getReportProblemForTaskFromBody(@PathParam("id") String stepId, @PathParam("destinationTitle") String destinationTitle,  String errorMessage) {
+    public Response getReportProblemForTaskFromBody(@PathParam("id") String stepId, @PathParam("destinationTitle") String destinationTitle,
+            String errorMessage) {
 
-        return getReportProblemForTask(stepId,  destinationTitle, errorMessage);
+        return getReportProblemForTask(stepId, destinationTitle, errorMessage);
     }
-
-
 
     @Path("/{id}/reportproblem/{destinationTitle}/{errortext}")
     @POST
@@ -110,7 +108,8 @@ public class Steps {
                 temp.setCorrectionStep();
                 temp.setBearbeitungsende(null);
 
-                Helper.addMessageToProcessJournal(temp.getProzess().getId(), LogType.ERROR, Helper.getTranslation("Korrektur notwendig") + " [automatic] " + errorMessage, "webapi");
+                Helper.addMessageToProcessJournal(temp.getProzess().getId(), LogType.ERROR,
+                        Helper.getTranslation("Korrektur notwendig") + " [automatic] " + errorMessage, "webapi");
 
                 HistoryManager.addHistory(myDate, temp.getReihenfolge().doubleValue(), temp.getTitel(), HistoryEventType.stepError.getValue(),
                         temp.getProzess().getId());
@@ -122,8 +121,7 @@ public class Steps {
                     }
                 }
 
-                for (Iterator<Step> iter = alleSchritteDazwischen.iterator(); iter.hasNext();) {
-                    Step step = iter.next();
+                for (Step step : alleSchritteDazwischen) {
                     step.setBearbeitungsstatusEnum(StepStatus.LOCKED);
                     // if (step.getPrioritaet().intValue() == 0)
                     step.setCorrectionStep();
@@ -132,7 +130,7 @@ public class Steps {
                     seg.setTitel(Helper.getTranslation("Korrektur notwendig"));
                     seg.setWert(Helper.getTranslation("KorrekturFuer") + temp.getTitel() + ": " + errorMessage);
                     seg.setSchritt(step);
-                    seg.setType(PropertyType.messageImportant);
+                    seg.setType(PropertyType.MESSAGE_IMPORTANT);
                     seg.setCreationDate(new Date());
                     step.getEigenschaften().add(seg);
 
