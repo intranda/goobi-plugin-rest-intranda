@@ -5,6 +5,6 @@
     <artifactId>plugin-rest-intranda</artifactId>
     <version>24.03-SNAPSHOT</version>
   </parent>
-  <artifactId>plugin-rest-intranda-base</artifactId>
+  <artifactId>plugin-rest-intranda-api</artifactId>
   <packaging>jar</packaging>
 </project>
