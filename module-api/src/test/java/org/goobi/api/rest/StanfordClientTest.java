@@ -6,12 +6,17 @@ import javax.ws.rs.client.Entity;
 import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.MediaType;
 
+import org.junit.Ignore;
+import org.junit.Test;
+
 import org.goobi.api.rest.request.StanfordCreationRequest;
 import org.goobi.api.rest.response.CreationResponse;
 
-public class StanfordTestClient {
+public class StanfordClientTest {
 
-    public static void main(String[] args) {
+    @Test
+    @Ignore("This was a main method before and not a unit test, we need to migrate this if required")
+    public void testSomething() {
         Client client = ClientBuilder.newClient();
         WebTarget goobiBase = client.target("http://demo03.intranda.com/goobi/api");
         WebTarget process = goobiBase.path("process");
@@ -46,7 +51,6 @@ public class StanfordTestClient {
         CreationResponse response = creation.request().header("token", "test").post(ent, CreationResponse.class);
 
         System.out.println(response);
-
     }
 }
 
