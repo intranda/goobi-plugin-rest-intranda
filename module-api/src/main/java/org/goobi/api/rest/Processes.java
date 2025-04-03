@@ -356,7 +356,7 @@ public class Processes {
             log.error(e);
             CreationResponse resp = new CreationResponse();
             resp.setResult("error");
-            resp.setErrorText("Error saving metadata file.");
+            resp.setErrorText("Error saving metadata file: " + e.getMessage());
             return Response.status(500).entity(resp).build();
         }
         /**
