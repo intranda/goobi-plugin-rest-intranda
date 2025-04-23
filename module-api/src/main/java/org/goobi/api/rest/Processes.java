@@ -33,21 +33,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpSession;
-import jakarta.ws.rs.Consumes;
-import jakarta.ws.rs.DELETE;
-import jakarta.ws.rs.GET;
-import jakarta.ws.rs.POST;
-import jakarta.ws.rs.PUT;
-import jakarta.ws.rs.Path;
-import jakarta.ws.rs.PathParam;
-import jakarta.ws.rs.Produces;
-import jakarta.ws.rs.QueryParam;
-import jakarta.ws.rs.core.Context;
-import jakarta.ws.rs.core.MediaType;
-import jakarta.ws.rs.core.Response;
-
 import org.apache.commons.lang3.StringUtils;
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
 import org.glassfish.jersey.media.multipart.FormDataParam;
@@ -86,6 +71,20 @@ import de.unigoettingen.sub.search.opac.ConfigOpac;
 import de.unigoettingen.sub.search.opac.ConfigOpacCatalogue;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpSession;
+import jakarta.ws.rs.Consumes;
+import jakarta.ws.rs.DELETE;
+import jakarta.ws.rs.GET;
+import jakarta.ws.rs.POST;
+import jakarta.ws.rs.PUT;
+import jakarta.ws.rs.Path;
+import jakarta.ws.rs.PathParam;
+import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.QueryParam;
+import jakarta.ws.rs.core.Context;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
 import lombok.extern.log4j.Log4j;
 import ugh.dl.DigitalDocument;
 import ugh.dl.DocStruct;
@@ -96,7 +95,7 @@ import ugh.dl.Prefs;
 import ugh.exceptions.MetadataTypeNotAllowedException;
 import ugh.exceptions.PreferencesException;
 import ugh.exceptions.ReadException;
-import ugh.exceptions.TypeNotAllowedForParentException;
+import ugh.exceptions.UGHException;
 import ugh.exceptions.WriteException;
 import ugh.fileformats.mets.MetsMods;
 
@@ -143,7 +142,7 @@ public class Processes {
         try {
             destFolder = p.getConfiguredImageFolder(folder);
 
-        } catch (IOException  | SwapException | DAOException e) {
+        } catch (IOException | SwapException | DAOException e) {
             log.error(e);
             return Response.status(500).build();
         }
@@ -271,51 +270,59 @@ public class Processes {
             fileformat.setDigitalDocument(digDoc);
         }
         DocStruct logicalDs = null;
+        DocStruct anchorDs = null;
+
         try {
             if (useOpac) {
                 logicalDs = digDoc.getLogicalDocStruct();
+                if (logicalDs.getType().isAnchor()) {
+                    anchorDs = logicalDs;
+                    logicalDs = logicalDs.getAllChildren().get(0);
+                }
+
             } else {
                 logicalDs = digDoc.createDocStruct(prefs.getDocStrctTypeByName(req.getLogicalDSType()));
                 Metadata idMd = new Metadata(prefs.getMetadataTypeByName("CatalogIDDigital"));
                 idMd.setValue(req.getIdentifier());
-                digDoc.setLogicalDocStruct(logicalDs);
+                if (StringUtils.isNotBlank(req.getAnchorDSType())) {
+                    anchorDs = digDoc.createDocStruct(prefs.getDocStrctTypeByName(req.getAnchorDSType()));
+                    anchorDs.addChild(logicalDs);
+                    digDoc.setLogicalDocStruct(anchorDs);
+                } else {
+                    digDoc.setLogicalDocStruct(logicalDs);
+                }
             }
             if (digDoc.getPhysicalDocStruct() == null) {
                 DocStruct physical = digDoc.createDocStruct(prefs.getDocStrctTypeByName("BoundBook"));
                 digDoc.setPhysicalDocStruct(physical);
             }
-        } catch (TypeNotAllowedForParentException | MetadataTypeNotAllowedException e) {
+        } catch (UGHException e) {
             log.error(e);
             CreationResponse resp = new CreationResponse();
             resp.setResult("error");
             resp.setErrorText("Error creating logical or physical DocStruct.");
             return Response.status(500).entity(resp).build();
         }
+        if (anchorDs != null && req.getAnchorMetadata() != null) {
+            Map<String, String> metadata = req.getAnchorMetadata();
+            String error = addMetadataToDocstruct(prefs, anchorDs, metadata);
+            if (error != null) {
+                CreationResponse resp = new CreationResponse();
+                resp.setResult("error");
+                resp.setErrorText(error);
+                return Response.status(422).entity(resp).build();
+            }
+
+        }
+
         if (req.getMetadata() != null) {
             Map<String, String> metadata = req.getMetadata();
-            for (String key : metadata.keySet()) {
-                // add metadata to new process
-                MetadataType mdt = prefs.getMetadataTypeByName(key);
-                if (mdt == null) {
-                    // another good error message and return;
-                    CreationResponse resp = new CreationResponse();
-                    resp.setResult("error");
-                    resp.setErrorText(String.format("Could not find MetadataType for \"%s\" in ruleset.", key));
-                    return Response.status(422).entity(resp).build();
-                }
-                Metadata md;
-                try {
-                    md = new Metadata(mdt);
-                    md.setValue(metadata.get(key));
-                    logicalDs.addMetadata(md);
-                } catch (MetadataTypeNotAllowedException e) {
-                    // send good error message and return
-                    log.error(e);
-                    CreationResponse resp = new CreationResponse();
-                    resp.setResult("error");
-                    resp.setErrorText(String.format("MetadataType \"%s\" not allowed in logical DocStruct.", key));
-                    return Response.status(422).entity(resp).build();
-                }
+            String error = addMetadataToDocstruct(prefs, logicalDs, metadata);
+            if (error != null) {
+                CreationResponse resp = new CreationResponse();
+                resp.setResult("error");
+                resp.setErrorText(error);
+                return Response.status(422).entity(resp).build();
             }
         }
 
@@ -332,11 +339,13 @@ public class Processes {
         //save template id and title
         Processproperty processProp = new Processproperty();
         processProp.setProzess(p);
+        processProp.setProcessId(p.getId());
         processProp.setTitel("TemplateID");
         processProp.setWert(template.getId().toString());
         PropertyManager.saveProcessProperty(processProp);
         processProp = new Processproperty();
         processProp.setProzess(p);
+        processProp.setProcessId(p.getId());
         processProp.setTitel("Template");
         processProp.setWert(template.getTitel());
         PropertyManager.saveProcessProperty(processProp);
@@ -344,6 +353,7 @@ public class Processes {
             for (String key : req.getProperties().keySet()) {
                 // add properties
                 Processproperty pp = new Processproperty();
+                pp.setProcessId(p.getId());
                 pp.setProzess(p);
                 pp.setTitel(key);
                 pp.setWert(req.getProperties().get(key));
@@ -352,7 +362,7 @@ public class Processes {
         }
         try {
             p.writeMetadataFile(fileformat);
-        } catch (WriteException | PreferencesException | IOException  | SwapException e) {
+        } catch (WriteException | PreferencesException | IOException | SwapException e) {
             log.error(e);
             CreationResponse resp = new CreationResponse();
             resp.setResult("error");
@@ -368,6 +378,27 @@ public class Processes {
         resp.setProcessId(p.getId());
         resp.setProcessName(p.getTitel());
         return Response.ok(resp).build();
+    }
+
+    private String addMetadataToDocstruct(Prefs prefs, DocStruct logicalDs, Map<String, String> metadata) {
+        for (String key : metadata.keySet()) {
+            // add metadata to new process
+            MetadataType mdt = prefs.getMetadataTypeByName(key);
+            if (mdt == null) {
+                return String.format("Could not find MetadataType for \"%s\" in ruleset.", key);
+            }
+            Metadata md;
+            try {
+                md = new Metadata(mdt);
+                md.setValue(metadata.get(key));
+                logicalDs.addMetadata(md);
+            } catch (MetadataTypeNotAllowedException e) {
+                // send good error message and return
+                log.error(e);
+                return String.format("MetadataType \"%s\" not allowed in logical DocStruct.", key);
+            }
+        }
+        return null;
     }
 
     @GET
@@ -543,6 +574,7 @@ public class Processes {
                 throw new ImportPluginException(
                         "Could not import record " + identifier + ". Found anchor file, but no children. Try to import the child record.");
             }
+
         } catch (PreferencesException e1) {
             throw new ImportPluginException("Could not import record " + identifier
                     + ". Usually this means a ruleset mapping is not correct or the record can not be found in the catalogue.");

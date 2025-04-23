@@ -3,6 +3,6 @@
 		<exec executable="mvn">
 			<arg value="package"/>
 		</exec>
-		<copy file="target/plugin_intranda_rest_default.jar" todir="/opt/digiverso/goobi/plugins/GUI/"/>
+		<copy file="module-api/target/plugin-rest-intranda-api.jar" todir="/opt/digiverso/goobi/plugins/GUI/"/>
 	</target>
 </project>
