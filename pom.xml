@@ -3,12 +3,12 @@
   <parent>
     <groupId>io.goobi.workflow</groupId>
     <artifactId>workflow-base</artifactId>
-    <version>25.04</version>
+    <version>25.05-SNAPSHOT</version>
     <relativePath />
   </parent>
   <groupId>io.goobi.workflow.plugin</groupId>
   <artifactId>plugin-rest-intranda</artifactId>
-  <version>25.04</version>
+  <version>25.05-SNAPSHOT</version>
   <packaging>pom</packaging>
   <modules>
     <module>module-api</module>
