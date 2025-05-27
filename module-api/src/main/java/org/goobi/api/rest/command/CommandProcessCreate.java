@@ -184,7 +184,7 @@ public class CommandProcessCreate {
         CreationResponse cr = new CreationResponse();
         String processtitle = UghHelper.convertUmlaut(req.getObjectId().replace("druid:", "")).toLowerCase();
         processtitle += "_" + UghHelper.convertUmlaut(req.getSourceID().replace(":", "_")).toLowerCase();
-        processtitle.replaceAll("[\\W]", "");
+        processtitle = processtitle.replaceAll("\\s", "_").replaceAll("\\W", "");
 
         Process p = ProcessManager.getProcessByTitle(processtitle);
         if (p != null) {
