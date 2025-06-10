@@ -9,7 +9,6 @@
   </parent>
   <groupId>io.goobi.workflow.plugin</groupId>
   <artifactId>plugin-rest-intranda</artifactId>
-  <version>25.05-SNAPSHOT</version>
   <packaging>pom</packaging>
   <modules>
     <module>module-api</module>
