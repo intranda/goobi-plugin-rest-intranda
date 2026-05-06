@@ -197,6 +197,7 @@ public class CommandProcessStatus {
             sr.setEndDate(step.getBearbeitungsende());
             sr.setStartDate(step.getBearbeitungsbeginn());
             sr.setStatus(step.getBearbeitungsstatusEnum().getTitle());
+            sr.setStepStatusId(step.getBearbeitungsstatusEnum().getValue());
             if (step.getBearbeitungsbenutzer() != null) {
                 sr.setUser(step.getBearbeitungsbenutzer().getNachVorname());
             }
