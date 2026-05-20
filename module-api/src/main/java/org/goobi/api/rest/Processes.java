@@ -136,7 +136,6 @@ public class Processes {
                 log.error("fileupload: user not in project");
                 return Response.status(401).entity("User is not authorized to upload to this project.").build();
             }
-            // TODO: maybe more checks
         }
         String destFolder = null;
         try {
@@ -157,7 +156,14 @@ public class Processes {
         }
 
         try {
-            java.nio.file.Path dest = filename == null || filename.isEmpty() ? path.resolve(fileMetaData.getFileName()) : path.resolve(filename);
+            String rawName = (filename == null || filename.isEmpty())
+                    ? fileMetaData.getFileName()
+                    : filename;
+            String safeName = Paths.get(rawName).getFileName().toString(); // removes all ../
+            java.nio.file.Path dest = path.resolve(safeName).normalize();
+            if (!dest.startsWith(path.normalize())) {
+                return Response.status(400).entity("Invalid filename.").build();
+            }
             StorageProvider.getInstance().uploadFile(fileInputStream, dest);
         } catch (IOException e) {
             log.error(e);
