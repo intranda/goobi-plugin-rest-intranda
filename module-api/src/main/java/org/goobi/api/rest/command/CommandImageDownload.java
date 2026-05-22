@@ -143,9 +143,9 @@ public class CommandImageDownload {
         try {
             FileOutputStream fos = new FileOutputStream(zipFile, true);
             try {
-                checksum = MessageDigest.getInstance("MD5");
+                checksum = MessageDigest.getInstance("SHA-256");
             } catch (NoSuchAlgorithmException e) {
-                log.error("No checksum algorithm \"MD5\". Disabling checksum creation");
+                log.error("No checksum algorithm \"SHA-256\". Disabling checksum creation");
                 checksum = null;
             }
             zos = new ZipOutputStream(fos);
