@@ -79,12 +79,14 @@ import ugh.exceptions.UGHException;
 import ugh.fileformats.mets.MetsMods;
 
 @Path("/process")
-
+@Deprecated
 public class CommandProcessCreate {
 
+    @Deprecated
     @Context
     UriInfo uriInfo;
 
+    @Deprecated
     @Path("/testresponse")
     @GET
     @Produces(MediaType.TEXT_XML)
@@ -97,6 +99,7 @@ public class CommandProcessCreate {
         return cr;
     }
 
+    @Deprecated
     @Path("/testrequest")
     @GET
     @Produces(MediaType.TEXT_XML)
@@ -118,6 +121,7 @@ public class CommandProcessCreate {
         return cr;
     }
 
+    @Deprecated
     @Path("create/{templateid}/{catalogueid}")
     @POST
     @Produces("text/json")
@@ -125,6 +129,7 @@ public class CommandProcessCreate {
         return createNewProcess(templateId, "GBV", catalogueId);
     }
 
+    @Deprecated
     @Path("create/{templateid}/{catalogue}/{catalogueid}")
     @POST
     @Produces("text/json")
@@ -175,6 +180,7 @@ public class CommandProcessCreate {
         return cr;
     }
 
+    @Deprecated
     @Path("/stanfordcreate")
     @POST
     @Consumes({ MediaType.TEXT_XML, MediaType.APPLICATION_XML })
@@ -303,6 +309,7 @@ public class CommandProcessCreate {
         return Response.status(Response.Status.CREATED).entity(cr).build();
     }
 
+    @Deprecated
     @Path("/mpicreate")
     @POST
     @Consumes({ MediaType.TEXT_XML, MediaType.APPLICATION_XML })
@@ -482,6 +489,7 @@ public class CommandProcessCreate {
         return ff;
     }
 
+    @Deprecated
     public String NeuenProzessAnlegen(Process process, Process template, Fileformat ff, Prefs prefs) throws Exception {
 
         for (Step step : process.getSchritteList()) {

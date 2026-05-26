@@ -1,9 +1,11 @@
 package org.goobi.api.rest.command;
 
+import org.goobi.api.rest.response.CreationResponse;
+
 /**
  * This file is part of a plugin for the Goobi Application - a Workflow tool for the support of mass digitization.
  * 
- * Visit the websites for more information. 
+ * Visit the websites for more information.
  *          - https://goobi.io
  *          - https://www.intranda.com
  *          - https://github.com/intranda/goobi
@@ -33,22 +35,22 @@ import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.UriInfo;
-
-import org.goobi.api.rest.response.CreationResponse;
-
 import lombok.Data;
 import lombok.extern.log4j.Log4j;
 
 @Data
 @Path("/metadata")
 @Log4j
+@Deprecated
 public class CommandMetadataSearch {
 
+    @Deprecated
     @Context
     UriInfo uriInfo;
 
-    // search in all fields 
+    // search in all fields
 
+    @Deprecated
     @Path("/simplesearch/{value}")
     @GET
     @Produces(MediaType.APPLICATION_JSON)
@@ -58,6 +60,7 @@ public class CommandMetadataSearch {
 
     // search in specific field(s), fields are cascaded with | symbol
 
+    @Deprecated
     @Path("/simplesearch/{field}/{value}")
     @GET
     @Produces(MediaType.APPLICATION_JSON)
@@ -65,6 +68,7 @@ public class CommandMetadataSearch {
         return searchAllMetadata(field, value, null, null);
     }
 
+    @Deprecated
     @Path("/simplesearch/{field}/{value}/{limit}")
     @GET
     @Produces(MediaType.APPLICATION_JSON)
@@ -72,6 +76,7 @@ public class CommandMetadataSearch {
         return searchAllMetadata(field, value, limit, null);
     }
 
+    @Deprecated
     @Path("/simplesearch/{field}/{value}/{limit}/{offset}")
     @GET
     @Produces(MediaType.APPLICATION_JSON)
@@ -85,8 +90,9 @@ public class CommandMetadataSearch {
         return resp;
     }
 
-    // extended 
+    // extended
 
+    @Deprecated
     @Path("/testresponse")
     @GET
     @Produces(MediaType.TEXT_XML)

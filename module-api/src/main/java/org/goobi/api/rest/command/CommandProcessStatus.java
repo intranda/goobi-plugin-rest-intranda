@@ -28,16 +28,7 @@ package org.goobi.api.rest.command;
 import java.io.IOException;
 import java.util.LinkedList;
 import java.util.List;
-
-import jakarta.ws.rs.GET;
-import jakarta.ws.rs.Path;
-import jakarta.ws.rs.PathParam;
-import jakarta.ws.rs.Produces;
-import jakarta.ws.rs.core.Context;
-import jakarta.ws.rs.core.MediaType;
-import jakarta.ws.rs.core.Response;
-import jakarta.ws.rs.core.Response.Status;
-import jakarta.ws.rs.core.UriInfo;
+import java.util.regex.Pattern;
 
 import org.goobi.api.rest.response.ProcessStatusResponse;
 import org.goobi.api.rest.response.StepResponse;
@@ -49,15 +40,30 @@ import de.sub.goobi.helper.StorageProvider;
 import de.sub.goobi.helper.exceptions.SwapException;
 import de.sub.goobi.persistence.managers.ProcessManager;
 import de.sub.goobi.persistence.managers.PropertyManager;
+import jakarta.ws.rs.GET;
+import jakarta.ws.rs.Path;
+import jakarta.ws.rs.PathParam;
+import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.WebApplicationException;
+import jakarta.ws.rs.core.Context;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.core.Response.Status;
+import jakarta.ws.rs.core.UriInfo;
 import lombok.extern.log4j.Log4j;
 
 @Path("/process")
 @Log4j
+@Deprecated
 public class CommandProcessStatus {
 
+    private static final Pattern DATE_PATTERN = Pattern.compile("^\\d{4}-\\d{2}-\\d{2}$");
+
+    @Deprecated
     @Context
     UriInfo uriInfo;
 
+    @Deprecated
     @Path("details/title/{processTitle}")
     @GET
     @Produces(MediaType.APPLICATION_JSON)
@@ -70,6 +76,7 @@ public class CommandProcessStatus {
         return resp;
     }
 
+    @Deprecated
     @Path("details/id/{processId}")
     @GET
     @Produces(MediaType.APPLICATION_JSON)
@@ -80,18 +87,23 @@ public class CommandProcessStatus {
         return resp;
     }
 
+    @Deprecated
     @Path("report/{startdate}/{enddate}")
     @GET
     @Produces(MediaType.APPLICATION_JSON)
     public List<ProcessStatusResponse> getProcessStatusList(@PathParam("startdate") String start, @PathParam("enddate") String end) {
-        String sql = "IstTemplate = false AND ";
+        if (!DATE_PATTERN.matcher(start).matches() || (end != null && !DATE_PATTERN.matcher(end).matches())) {
+            throw new WebApplicationException(Response.status(Status.BAD_REQUEST).entity("Invalid date format, expected YYYY-MM-DD").build());
+        }
+
+        StringBuilder sql = new StringBuilder("IstTemplate = false AND ");
 
         if (end != null) {
-            sql += "(erstellungsdatum BETWEEN '" + start + "' AND '" + end + "')";
+            sql.append("(erstellungsdatum BETWEEN '").append(start).append("' AND '").append(end).append("')");
         } else {
-            sql += "erstellungsdatum > '" + start + "'";
+            sql.append("erstellungsdatum > '").append(start).append("'");
         }
-        List<Integer> processIdList = ProcessManager.getIdsForFilter(sql);
+        List<Integer> processIdList = ProcessManager.getIdsForFilter(sql.toString());
 
         List<ProcessStatusResponse> processList = new LinkedList<>();
 
@@ -106,6 +118,7 @@ public class CommandProcessStatus {
         return processList;
     }
 
+    @Deprecated
     @Path("report/{startdate}")
     @GET
     @Produces(MediaType.APPLICATION_JSON)
@@ -119,6 +132,7 @@ public class CommandProcessStatus {
      * @return status code 200 if process exists and has images, 206 if process exists, but has no images, 404 if process does not exist and 500 on
      *         internal error
      */
+    @Deprecated
     @Path("check/id/{processId}")
     @GET
     @Produces(MediaType.TEXT_PLAIN)
@@ -130,6 +144,7 @@ public class CommandProcessStatus {
         return checkStatusProcessContent(p);
     }
 
+    @Deprecated
     @Path("check/title/{processTitle}")
     @GET
     @Produces(MediaType.TEXT_PLAIN)

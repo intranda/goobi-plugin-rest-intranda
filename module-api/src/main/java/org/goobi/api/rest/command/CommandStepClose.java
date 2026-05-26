@@ -28,16 +28,6 @@ package org.goobi.api.rest.command;
 import java.io.File;
 import java.util.List;
 
-import jakarta.ws.rs.POST;
-import jakarta.ws.rs.Path;
-import jakarta.ws.rs.PathParam;
-import jakarta.ws.rs.Produces;
-import jakarta.ws.rs.core.Context;
-import jakarta.ws.rs.core.MediaType;
-import jakarta.ws.rs.core.Response;
-import jakarta.ws.rs.core.Response.Status;
-import jakarta.ws.rs.core.UriInfo;
-
 import org.goobi.api.rest.response.CloseStepResponse;
 import org.goobi.beans.Process;
 import org.goobi.beans.Step;
@@ -51,12 +41,23 @@ import de.sub.goobi.helper.ShellScript;
 import de.sub.goobi.helper.enums.StepStatus;
 import de.sub.goobi.persistence.managers.ProcessManager;
 import de.sub.goobi.persistence.managers.StepManager;
+import jakarta.ws.rs.POST;
+import jakarta.ws.rs.Path;
+import jakarta.ws.rs.PathParam;
+import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.core.Context;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.core.Response.Status;
+import jakarta.ws.rs.core.UriInfo;
 import lombok.extern.log4j.Log4j;
 
 @Path("/closestep")
 @Log4j
+@Deprecated
 public class CommandStepClose {
 
+    @Deprecated
     @Context
     UriInfo uriInfo;
 
@@ -67,6 +68,7 @@ public class CommandStepClose {
      * @param stepName
      * @return
      */
+    @Deprecated
     @Path("/processtitles/{processtitle}/{stepname}")
     @POST
     @Produces(MediaType.TEXT_XML)
@@ -75,7 +77,7 @@ public class CommandStepClose {
         return closeStep(stepName, p);
     }
 
-
+    @Deprecated
     @Path("/processid/{processid}/{stepname}")
     @POST
     @Produces(MediaType.TEXT_XML)
@@ -104,6 +106,7 @@ public class CommandStepClose {
         return closeStepAndRemoveLink(null, so.getId());
     }
 
+    @Deprecated
     @Path("/{stepid}")
     @POST
     @Produces(MediaType.TEXT_XML)
@@ -111,6 +114,7 @@ public class CommandStepClose {
         return closeStepAndRemoveLink(null, stepid);
     }
 
+    @Deprecated
     @Path("/{username}/{stepid}")
     @POST
     @Produces(MediaType.TEXT_XML)
@@ -127,51 +131,49 @@ public class CommandStepClose {
             cr.setResult("error");
             message = "Step not found";
             status = Response.Status.NOT_FOUND;
+        } else if (so.getValidationPlugin() != null && so.getValidationPlugin().length() > 0) {
+            IValidatorPlugin ivp = (IValidatorPlugin) PluginLoader.getPluginByTitle(PluginType.Validation, so.getValidationPlugin());
+            ivp.setStep(so);
+            if (!ivp.validate()) {
+                message = "Step not closed, validation failed";
+                cr.setResult("error");
+                status = Response.Status.NOT_ACCEPTABLE;
+            }
         } else {
-            if (so.getValidationPlugin() != null && so.getValidationPlugin().length() > 0) {
-                IValidatorPlugin ivp = (IValidatorPlugin) PluginLoader.getPluginByTitle(PluginType.Validation, so.getValidationPlugin());
-                ivp.setStep(so);
-                if (!ivp.validate()) {
-                    message = "Step not closed, validation failed";
-                    cr.setResult("error");
+            if (username != null) {
+                StringBuilder sb = new StringBuilder();
+                sb.append(ConfigurationHelper.getInstance().getUserFolder());
+                Process po = so.getProzess();
+                sb.append(username);
+                sb.append("/");
+                sb.append(
+
+                        po.getTitel());
+
+                sb.append(" [");
+                sb.append(po.getId());
+                sb.append("]");
+                String nach = sb.toString().replace(" ", "__");
+                File benutzerHome = new File(nach);
+                String command = ConfigurationHelper.getInstance().getScriptDeleteSymLink() + " " + benutzerHome;
+
+                try {
+                    ShellScript.legacyCallShell2(command, so.getProcessId());
+                } catch (java.io.IOException | InterruptedException ioe) {
+                    log.error("IOException UploadFromHome", ioe);
+                    message = "Removing symlink from user home failed";
                     status = Response.Status.NOT_ACCEPTABLE;
-                }
-            } else {
-                if (username != null) {
-                    StringBuilder sb = new StringBuilder();
-                    sb.append(ConfigurationHelper.getInstance().getUserFolder());
-                    Process po = so.getProzess();
-                    sb.append(username);
-                    sb.append("/");
-                    sb.append(
-
-                            po.getTitel());
-
-                    sb.append(" [");
-                    sb.append(po.getId());
-                    sb.append("]");
-                    String nach = sb.toString().replaceAll(" ", "__");
-                    File benutzerHome = new File(nach);
-                    String command = ConfigurationHelper.getInstance().getScriptDeleteSymLink() + " " + benutzerHome;
-
-                    try {
-                        ShellScript.legacyCallShell2(command, so.getProcessId());
-                    } catch (java.io.IOException | InterruptedException ioe) {
-                        log.error("IOException UploadFromHome", ioe);
-                        message = "Removing symlink from user home failed";
-                        status = Response.Status.NOT_ACCEPTABLE;
-                        cr.setResult("error");
-                    }
+                    cr.setResult("error");
                 }
             }
         }
-        if (so != null && so.getBearbeitungsstatusEnum().equals(StepStatus.DONE)) {
+        if (so != null && StepStatus.DONE.equals(so.getBearbeitungsstatusEnum())) {
             message = "Step was already closed.";
             status = Response.Status.BAD_REQUEST;
             cr.setResult("error");
         }
 
-        if (status.equals(Response.Status.OK)) {
+        if (Response.Status.OK.equals(status)) {
             HelperSchritte hs = new HelperSchritte();
             hs.CloseStepObjectAutomatic(so);
             log.debug("step closed");

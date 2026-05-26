@@ -28,6 +28,12 @@ package org.goobi.api.rest.command;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 
+import org.goobi.api.rest.response.DeletionResponse;
+import org.goobi.beans.Process;
+
+import de.sub.goobi.helper.Helper;
+import de.sub.goobi.helper.StorageProvider;
+import de.sub.goobi.persistence.managers.ProcessManager;
 import jakarta.ws.rs.POST;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.PathParam;
@@ -37,20 +43,15 @@ import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.UriInfo;
 
-import org.goobi.api.rest.response.DeletionResponse;
-import org.goobi.beans.Process;
-
-import de.sub.goobi.helper.Helper;
-import de.sub.goobi.helper.StorageProvider;
-import de.sub.goobi.persistence.managers.ProcessManager;
-
 @Path("/process")
-
+@Deprecated
 public class CommandProcessDelete {
 
+    @Deprecated
     @Context
     UriInfo uriInfo;
 
+    @Deprecated
     @Path("delete/id/{processId}")
     @POST
     @Produces(MediaType.APPLICATION_XML)

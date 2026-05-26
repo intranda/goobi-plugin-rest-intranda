@@ -1,10 +1,5 @@
 package org.goobi.api.rest.command;
 
-import jakarta.ws.rs.POST;
-import jakarta.ws.rs.Path;
-import jakarta.ws.rs.PathParam;
-import jakarta.ws.rs.core.Response;
-
 import org.goobi.beans.Process;
 import org.goobi.beans.Step;
 import org.goobi.production.enums.LogType;
@@ -12,7 +7,12 @@ import org.goobi.production.enums.LogType;
 import de.sub.goobi.helper.Helper;
 import de.sub.goobi.persistence.managers.ProcessManager;
 import de.sub.goobi.persistence.managers.StepManager;
+import jakarta.ws.rs.POST;
+import jakarta.ws.rs.Path;
+import jakarta.ws.rs.PathParam;
+import jakarta.ws.rs.core.Response;
 
+@Deprecated
 @Path("/addtoprocesslog")
 public class CommandAddToProcessLog {
 
@@ -24,6 +24,7 @@ public class CommandAddToProcessLog {
      * @param value
      * @return
      */
+    @Deprecated
     @POST
     @Path("/processtitles/{processtitle}/{type}")
     public Response addToLogByProcessTitle(@PathParam("processtitle") String processTitle, @PathParam("type") String type, String value) {
@@ -31,8 +32,7 @@ public class CommandAddToProcessLog {
         return addToLog(type, value, process);
     }
 
-
-
+    @Deprecated
     @POST
     @Path("/steps/{stepid}/{type}")
     public Response addToLogByStepId(@PathParam("stepid") Integer id, @PathParam("type") String type, String value) {
@@ -51,6 +51,7 @@ public class CommandAddToProcessLog {
         return addToLog(type, value, process);
     }
 
+    @Deprecated
     @POST
     @Path("/processes/{processid}/{type}")
     public Response addToLogByProcessId(@PathParam("processid") Integer processId, @PathParam("type") String type, String value) {

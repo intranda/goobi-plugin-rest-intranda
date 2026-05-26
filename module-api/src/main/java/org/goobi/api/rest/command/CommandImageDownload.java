@@ -40,6 +40,9 @@ import java.util.List;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
+import de.sub.goobi.helper.StorageProvider;
+import de.sub.goobi.helper.exceptions.SwapException;
+import de.sub.goobi.persistence.managers.ProcessManager;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.PathParam;
@@ -51,19 +54,18 @@ import jakarta.ws.rs.core.Response.ResponseBuilder;
 import jakarta.ws.rs.core.Response.Status;
 import jakarta.ws.rs.core.StreamingOutput;
 import jakarta.ws.rs.core.UriInfo;
-
-import de.sub.goobi.helper.StorageProvider;
-import de.sub.goobi.helper.exceptions.SwapException;
-import de.sub.goobi.persistence.managers.ProcessManager;
 import lombok.extern.log4j.Log4j;
 
 @Path("/process")
 @Log4j
+@Deprecated
 public class CommandImageDownload {
 
+    @Deprecated
     @Context
     UriInfo uriInfo;
 
+    @Deprecated
     @Path("download/id/{processId}")
     @GET
     @Produces("application/zip")
@@ -73,6 +75,7 @@ public class CommandImageDownload {
 
     }
 
+    @Deprecated
     @Path("download/title/{processTitle}")
     @GET
     @Produces("application/zip")
@@ -91,7 +94,7 @@ public class CommandImageDownload {
         List<java.nio.file.Path> images = null;
         try {
             images = StorageProvider.getInstance().listFiles(process.getImagesTifDirectory(true));
-        } catch (IOException  | SwapException  e1) {
+        } catch (IOException | SwapException e1) {
             log.error(e1);
         }
 

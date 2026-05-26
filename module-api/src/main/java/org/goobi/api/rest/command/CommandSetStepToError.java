@@ -28,14 +28,6 @@ package org.goobi.api.rest.command;
 import java.util.Date;
 import java.util.List;
 
-import jakarta.ws.rs.POST;
-import jakarta.ws.rs.Path;
-import jakarta.ws.rs.PathParam;
-import jakarta.ws.rs.Produces;
-import jakarta.ws.rs.core.MediaType;
-import jakarta.ws.rs.core.Response;
-import jakarta.ws.rs.core.Response.Status;
-
 import org.goobi.api.rest.response.CloseStepResponse;
 import org.goobi.beans.Process;
 import org.goobi.beans.Step;
@@ -45,7 +37,15 @@ import de.sub.goobi.helper.enums.StepStatus;
 import de.sub.goobi.helper.exceptions.DAOException;
 import de.sub.goobi.persistence.managers.ProcessManager;
 import de.sub.goobi.persistence.managers.StepManager;
+import jakarta.ws.rs.POST;
+import jakarta.ws.rs.Path;
+import jakarta.ws.rs.PathParam;
+import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.core.Response.Status;
 
+@Deprecated
 @Path("seterrorstep")
 public class CommandSetStepToError {
 
@@ -55,6 +55,7 @@ public class CommandSetStepToError {
      * @param sourceid
      * @return
      */
+    @Deprecated
     @Path("/{stepid}")
     @POST
     @Produces(MediaType.APPLICATION_JSON)
@@ -84,6 +85,7 @@ public class CommandSetStepToError {
      * @param stepName
      * @return
      */
+    @Deprecated
     @Path("/processtitles/{processtitle}/{stepname}")
     @POST
     @Produces(MediaType.APPLICATION_JSON)
