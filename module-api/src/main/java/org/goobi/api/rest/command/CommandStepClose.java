@@ -141,6 +141,13 @@ public class CommandStepClose {
             }
         } else {
             if (username != null) {
+                if (!username.matches("[a-zA-Z0-9_.@-]+")) {
+                    cr.setResult("error");
+                    message = "Invalid username";
+                    status = Response.Status.BAD_REQUEST;
+                    cr.setComment(message);
+                    return Response.status(status).entity(cr).build();
+                }
                 StringBuilder sb = new StringBuilder();
                 sb.append(ConfigurationHelper.getInstance().getUserFolder());
                 Process po = so.getProzess();

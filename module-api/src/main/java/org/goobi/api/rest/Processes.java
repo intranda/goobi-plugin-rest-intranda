@@ -121,6 +121,9 @@ public class Processes {
     public Response uploadFile(@PathParam("processId") int processId, @PathParam("folder") final String folder,
             @FormDataParam("file") InputStream fileInputStream, @FormDataParam("file") FormDataContentDisposition fileMetaData,
             @FormDataParam("filename") String filename) {
+        if (!folder.matches("[a-zA-Z0-9_-]+")) {
+            return Response.status(400).entity("Invalid folder name.").build();
+        }
         Process p = ProcessManager.getProcessById(processId);
         HttpSession session = request.getSession();
         LoginBean userBean = (LoginBean) session.getAttribute("LoginForm");

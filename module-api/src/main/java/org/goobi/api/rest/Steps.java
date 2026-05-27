@@ -60,7 +60,7 @@ public class Steps {
     @Path("/{id}/reportproblem/{destinationTitle}")
     @POST
     @Produces(MediaType.APPLICATION_JSON)
-    public Response getReportProblemForTaskFromBody(@PathParam("id") String stepId, @PathParam("destinationTitle") String destinationTitle,
+    public Response getReportProblemForTaskFromBody(@PathParam("id") int stepId, @PathParam("destinationTitle") String destinationTitle,
             String errorMessage) {
 
         return getReportProblemForTask(stepId, destinationTitle, errorMessage);
@@ -69,17 +69,15 @@ public class Steps {
     @Path("/{id}/reportproblem/{destinationTitle}/{errortext}")
     @POST
     @Produces(MediaType.APPLICATION_JSON)
-    public Response getReportProblemForTask(@PathParam("id") String stepId, @PathParam("destinationTitle") String destinationTitle,
+    public Response getReportProblemForTask(@PathParam("id") int stepId, @PathParam("destinationTitle") String destinationTitle,
             @PathParam("errortext") String errorMessage) {
         Date myDate = new Date();
         ReportProblemResponse response = new ReportProblemResponse();
 
-        int sourceid = Integer.parseInt(stepId);
-
-        response.setErrorStepId(sourceid);
+        response.setErrorStepId(stepId);
 
         try {
-            Step source = StepManager.getStepById(sourceid);
+            Step source = StepManager.getStepById(stepId);
             if (source == null) {
                 response.setErrorText("StepId not found");
                 return Response.status(Status.BAD_REQUEST).entity(response).build();
@@ -158,7 +156,15 @@ public class Steps {
     @Consumes(MediaType.APPLICATION_XML)
     @Produces(MediaType.APPLICATION_XML)
     public Response getReportProblemForTask(ReportProblem problem) {
-        return getReportProblemForTask(problem.getStepId(), problem.getDestinationStepName(), problem.getErrorText());
+        int stepId;
+        try {
+            stepId = Integer.parseInt(problem.getStepId());
+        } catch (NumberFormatException e) {
+            ReportProblemResponse response = new ReportProblemResponse();
+            response.setErrorText("Invalid step id");
+            return Response.status(Status.BAD_REQUEST).entity(response).build();
+        }
+        return getReportProblemForTask(stepId, problem.getDestinationStepName(), problem.getErrorText());
     }
 
 }

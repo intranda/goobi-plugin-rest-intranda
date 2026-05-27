@@ -52,6 +52,9 @@ public class Messages {
     @Path("/{language}")
     @Produces(MediaType.APPLICATION_JSON)
     public Map<String, String> getBundleForLanguage(@PathParam("language") String language) {
+        if (!language.matches("[a-zA-Z]{2,8}")) {
+            return new HashMap<>();
+        }
         Locale locale = new Locale(language);
         ResourceBundle bundle = ResourceBundle.getBundle("messages", locale);
         Map<String, String> bundleMap = new HashMap<>();
