@@ -30,7 +30,6 @@ import java.util.List;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.SystemUtils;
-import org.goobi.api.rest.request.CreationRequest;
 import org.goobi.api.rest.request.MpiCreationRequest;
 import org.goobi.api.rest.request.StanfordCreationRequest;
 import org.goobi.api.rest.request.StanfordCreationRequestTag;
@@ -59,10 +58,8 @@ import de.unigoettingen.sub.search.opac.ConfigOpac;
 import de.unigoettingen.sub.search.opac.ConfigOpacCatalogue;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.ws.rs.Consumes;
-import jakarta.ws.rs.GET;
 import jakarta.ws.rs.POST;
 import jakarta.ws.rs.Path;
-import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.MediaType;
@@ -85,100 +82,6 @@ public class CommandProcessCreate {
     @Deprecated
     @Context
     UriInfo uriInfo;
-
-    @Deprecated
-    @Path("/testresponse")
-    @GET
-    @Produces(MediaType.TEXT_XML)
-    public CreationResponse helloWorld() {
-        CreationResponse cr = new CreationResponse();
-        cr.setProcessId(123);
-        cr.setErrorText("field order_number is missing or empty");
-        cr.setProcessName("34_Doe");
-        cr.setResult("failure");
-        return cr;
-    }
-
-    @Deprecated
-    @Path("/testrequest")
-    @GET
-    @Produces(MediaType.TEXT_XML)
-    public CreationRequest getTest(@PathParam("text") String text) {
-        CreationRequest cr = new CreationRequest();
-        cr.setAll_pages(true);
-        cr.setBtw_number(999999999);
-        cr.setClient_instructions("some instructions");
-        cr.setEmail("john.doe@example.com");
-        cr.setIdentifier("003192975");
-        cr.setItem_in_order(12);
-        cr.setLastname("Doe");
-        cr.setOrder_number(34);
-        cr.setPage_numbers("1-7");
-        cr.setProcess_template(1);
-        cr.setSalutation("Mr.");
-        cr.setSignature("otm: kf 62-335");
-
-        return cr;
-    }
-
-    @Deprecated
-    @Path("create/{templateid}/{catalogueid}")
-    @POST
-    @Produces("text/json")
-    public CreationResponse createNewProcess(@PathParam("templateid") int templateId, @PathParam("catalogueid") String catalogueId) {
-        return createNewProcess(templateId, "GBV", catalogueId);
-    }
-
-    @Deprecated
-    @Path("create/{templateid}/{catalogue}/{catalogueid}")
-    @POST
-    @Produces("text/json")
-    public CreationResponse createNewProcess(@PathParam("templateid") int templateId, @PathParam("catalogue") String catalogue,
-            @PathParam("catalogueid") String catalogueId) {
-        CreationResponse cr = new CreationResponse();
-
-        String opacIdentifier = catalogueId;
-        String myCatalogue = catalogue;
-        String processTitle = catalogueId;
-
-        Process p = ProcessManager.getProcessByTitle(processTitle);
-        if (p != null) {
-            cr.setResult("error");
-            cr.setErrorText("Process " + processTitle + " already exists.");
-            cr.setProcessId(p.getId());
-            cr.setProcessName(p.getTitel());
-            return cr;
-        }
-
-        Process template = ProcessManager.getProcessById(templateId);
-        Prefs prefs = template.getRegelsatz().getPreferences();
-        Fileformat ff = null;
-        try {
-            ff = getOpacRequest(opacIdentifier, prefs, myCatalogue);
-
-        } catch (Exception e) {
-            cr.setResult("error");
-            cr.setErrorText("Error during opac request for " + opacIdentifier + " from catalogue " + myCatalogue + ": " + e.getMessage());
-            return cr;
-        }
-
-        Process process = cloneTemplate(template);
-        // set title
-        process.setTitel(processTitle);
-
-        try {
-            NeuenProzessAnlegen(process, template, ff, prefs);
-        } catch (Exception e) {
-            cr.setResult("error");
-            cr.setErrorText("Error during process creation for " + opacIdentifier + ": " + e.getMessage());
-            return cr;
-        }
-
-        cr.setResult("success");
-        cr.setProcessName(process.getTitel());
-        cr.setProcessId(process.getId());
-        return cr;
-    }
 
     @Deprecated
     @Path("/stanfordcreate")
