@@ -1,3 +1,7 @@
+<hr>
+<b>As of v26.10 this plugin is part of the goobi-workflow-core application and must not be installed anymore.</b>
+<hr>
+
 # Goobi workflow Plugin: goobi-plugin-rest-intranda
 
 <picture>
